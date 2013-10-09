@@ -24,17 +24,23 @@
 
         <!-- Add your site or application content here -->
 
-        <div id="buttons">
-            <button id="Start">Start</button>
-            <button id="Send">Send</button>
-            <button id="Stop">Stop</button>
-        </div>
-        <textarea id="dataChannelSend" placeholder="Sendbox" style="margin: 0px 2px; height: 300px; width: 400px;"></textarea>
-        <textarea id="dataChannelRecieve" placeholder="Recievebox" style="margin: 0px 2px; height: 300px; width: 400px;"></textarea>
+        <span id="OwnID">Not Connected to server!</span>
 
+        <div id="buttons">
+        	<button id="ConnectToServer">Connect to Server</button>
+            <button id="ConnectToPeer">Connect to Peer</button>
+            <button id="Send">Send</button>
+            <button id="Disconnect">Disconnect</button>
+        </div>
+
+        <div id="Input box">
+        	<textarea id="dataChannelSend" placeholder="Sendbox" style="margin: 0px 2px; height: 100px; width: 300px;"></textarea>
+        </div>
+        <div id="Recieve box">
+        	<textarea id="dataChannelRecieve" placeholder="Recieved data" disabled="" style="margin: 0px 2px; height: 300px; width: 300px;"></textarea>
+        </div>
         <script src="js/vendor/jquery-2.0.3.min.js"></script>
         <script src="js/peer.js"></script>
-        <script src="js/testijs.js"></script>
         <script src="js/plugins.js"></script>
         <script src="js/main.js"></script>
     </body>

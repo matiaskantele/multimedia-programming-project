@@ -1,3 +1,100 @@
+//Initialize vars here to make them global
+var peer = undefined;
+var connection = undefined; //Connection to another peer, should be made an array in future for possible multiple connections
+var serverInfo = {ownID: 'kone1', hostname: '82.130.14.29', port: 7500};
+
+function RegisterToServer(){
+
+	//Register to server using info above. Timeouts if server is not running.
+	//Server is off by default, ask Kura2 in IRC if you need it
+	//Note: Server should assign a random ID to peer when ID is omitted from constructor
+	//...but I got some strange http.open bug in peer.js when i tested that locally so i left the ID there
+	//Another note: There is no reason not to run this function immediately on page load
+	//...if there wasn't that damn ID assignment error when testing locally, that is
+	//@todo fix it somehow
+	peer = new Peer(serverInfo.ownID, {host: serverInfo.hostname, port: serverInfo.port});
+
+	//Error handling
+	peer.on('error', function(error){
+		alert(error.message);
+	});
+
+	//This is run after we've successfully connected to server and recieved an ID
+	peer.on('open', function(id) {
+		$("#OwnID").text("Own ID: "+id);
+		console.log("Connected to brokering server");
+	});
+}
+
+//Creates a connection to a given peer id
+function ConnectToPeer(peerId){
+
+	//Error checking
+	if(peer === undefined){
+		//Shouldn't be needed to test as this should be done on page load
+		alert("Not connected to server");
+		return false;
+	}
+	else if(connection === undefined){
+		alert("Not connected to any peers");
+		return false;
+	}
+	else if(peerId === undefined){
+		alert("No input");
+		return false;
+	}
+
+	//Get peer ID to connect to from input box text if there's text
+	if(peerId === undefined){
+		if($("#dataChannelSend").val() === ""){
+			alert("No peer ID specified");
+			return false;
+		}
+		peerId = $("#dataChannelSend").val();
+		$("#dataChannelSend").val(""); //Empty after taking the ID
+	}
+
+	//Actual connection
+	connection = peer.connect(peerId);
+
+	console.log("Connected to another peer");
+}
+
+//This function is run after whole DOM has been loaded
+$(document).ready(function() {
+
+	//Bind functions to html elements
+	$("#ConnectToServer").on('click', function(){
+		//Should be run on page load instead of having a separate button
+		RegisterToServer();
+	});
+
+	$("#ConnectToPeer").on('click', function(){
+		ConnectToPeer();
+	});
+	$("#Disconnect").on('click', function(){
+		if(peer === undefined){
+			alert("Not connected to a server"); //Is this even needed?
+		}
+		else{
+			peer.destroy();
+			console.log("Disconnected from brokering server");
+		}
+	});
+
+	$("#Send").on('click', function(){
+		alert("todo");
+	});
+	
+});
+
+/*
+
+THREE JS STUFF BELOW
+
+*/
+
+
 /*
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
