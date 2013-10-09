@@ -77,7 +77,8 @@ $(document).ready(function() {
 			alert("Not connected to a server"); //Is this even needed?
 		}
 		else{
-			peer.destroy();
+			peer.destroy(); //destroy() or disconnect() based on what we're going to make
+			peer = undefined; connection = undefined;
 			console.log("Disconnected from brokering server");
 		}
 	});
