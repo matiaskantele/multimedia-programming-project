@@ -1,3 +1,7 @@
+//@todo: sending and recieving data between peers
+//@todo: test connections between peers (currently everything untested)
+//@todo: fix node.js http.get error when trying to get unique ID from server locally
+
 //Initialize vars here to make them global
 var peer = undefined;
 var connection = undefined; //Connection to another peer, should be made an array in future for possible multiple connections
@@ -11,7 +15,6 @@ function RegisterToServer(){
 	//...but I got some strange http.open bug in peer.js when i tested that locally so i left the ID there
 	//Another note: There is no reason not to run this function immediately on page load
 	//...if there wasn't that damn ID assignment error when testing locally, that is
-	//@todo fix it somehow
 	peer = new Peer(serverInfo.ownID, {host: serverInfo.hostname, port: serverInfo.port});
 
 	//Error handling
