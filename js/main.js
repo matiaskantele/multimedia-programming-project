@@ -1,3 +1,7 @@
+//!!!
+//@TODO: p2p connection and data send/receive need testing badly, current implementation in 100% untested
+//!!!
+
 //@todo: sending and recieving data between peers
 //@todo: test connections between peers (currently everything untested)
 //@todo: fix node.js http.get error when trying to get unique ID from server locally
@@ -7,9 +11,21 @@ var peer = undefined;
 var connection = undefined; //Connection to another peer, should be made an array in future for possible multiple connections
 var serverInfo = {ownID: 'kone1', hostname: '82.130.14.29', port: 7500};
 
+function HandleReceivedData(conn, data){
+	//Supposedly game related data receiving goes here
+
+	$("dataChannelRecieve").val(data);
+	console.log(data);
+}
+
+function SendData(conn, data){
+	//And supposedly game mechanics should use this function for sending data
+	conn.send(data);
+}
+
 function RegisterToServer(){
 
-	//Register to server using info above. Timeouts if server is not running.
+	//Register to server using info above. Timeouts/errors if server is not running.
 	//Server is off by default, ask Kura2 in IRC if you need it
 	//Note: Server should assign a random ID to peer when ID is omitted from constructor
 	//...but I got some strange http.open bug in peer.js when i tested that locally so i left the ID there
@@ -26,6 +42,13 @@ function RegisterToServer(){
 	peer.on('open', function(id) {
 		$("#OwnID").text("Own ID: "+id);
 		console.log("Connected to brokering server");
+	});
+
+	peer.on('connection', function(conn) {
+  		conn.on('data', function(data){
+  			//Handle whatever data we got (do we need to pass conn as arg?)
+    		HandleReceivedData(conn, data);
+  		});
 	});
 }
 
@@ -87,7 +110,19 @@ $(document).ready(function() {
 	});
 
 	$("#Send").on('click', function(){
-		alert("todo");
+		//Get data from textbox (later on game functionality should use the SendData function)
+		var data = $("#dataChannelSend").val();
+		
+		if(connection === undefined){
+			alert("not connected to a peer");
+		}
+		else if(data === undefined || data === ""){
+			alert("nothing to send!");
+		}
+
+		//Actual send data
+		SendData(connection, "bet this doesn't work yet");
+		$("#dataChannelSend").val(""); //clear textbox
 	});
 	
 });
