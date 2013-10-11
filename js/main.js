@@ -31,7 +31,7 @@ function RegisterToServer(){
 	//...but I got some strange http.open bug in peer.js when i tested that locally so i left the ID there
 	//Another note: There is no reason not to run this function immediately on page load
 	//...if there wasn't that damn ID assignment error when testing locally, that is
-	peer = new Peer(serverInfo.ownID, {host: serverInfo.hostname, port: serverInfo.port});
+	peer = new Peer(serverInfo.ownID, {host: serverInfo.hostname, port: serverInfo.port}, {'iceServers':[{'url':'stun:stun.l.google.com:19302'}]});
 
 	//Error handling
 	peer.on('error', function(error){
