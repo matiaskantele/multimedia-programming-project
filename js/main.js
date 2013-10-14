@@ -1,34 +1,46 @@
-//!!!
-//@TODO: p2p connection and data send/receive need testing badly, current implementation in 100% untested
-//!!!
-
-//@todo: sending and recieving data between peers
-//@todo: test connections between peers (currently everything untested)
-//@todo: fix node.js http.get error when trying to get unique ID from server locally
-
 //Initialize vars here to make them global
 var peer = undefined;
 var connection = undefined; //Connection to another peer, should be made an array in future for possible multiple connections
 var serverInfo = {hostname: '82.130.14.29', port: 7500};
 
 function HandleReceivedData(conn, data){
-	//Supposedly game related data receiving goes here
+	//Game related data receiving goes here
 
 	$("dataChannelRecieve").val(data);
 	console.log(data);
 }
 
 function SendData(conn, data){
-	//And supposedly game mechanics should use this function for sending data
+	//Game mechanics should use this function for sending data
 	conn.send(data);
+}
+
+function SetConnectionEvents(conn){
+	
+	//When connection is established
+	conn.on('open', function(){
+		connection = conn;
+		$("#ConnectToPeer").text("Connect to Peer");
+		alert('Connection established!');
+	});
+
+	//When remote peer connection is closed
+	conn.on('close', function(){
+		connection = undefined;
+		alert('Disconnected from peer!');
+	});
+
+	//When we recieve data from remote peer
+  	conn.on('data', function(data){
+  		console.log(new Date().getTime());
+   		HandleReceivedData(conn, data);
+	});
 }
 
 function RegisterToServer(){
 
 	//Register to server using info above. Timeouts/errors if server is not running.
 	//Server is off by default, ask Kura2 in IRC if you need it
-	//Note: Server should assign a random ID to peer when ID is omitted from constructor
-	//Another note: There is no reason not to run this function immediately on page load
 	peer = new Peer({host: serverInfo.hostname, port: serverInfo.port}, {'iceServers':[{'url':'stun:stun.l.google.com:19302'}]});
 
 	//Error handling
@@ -42,11 +54,9 @@ function RegisterToServer(){
 		console.log("Connected to brokering server");
 	});
 
+	//Set up connection if someone connects to us
 	peer.on('connection', function(conn) {
-  		conn.on('data', function(data){
-  			//Handle whatever data we got (do we need to pass conn as arg?)
-    		HandleReceivedData(conn, data);
-  		});
+		SetConnectionEvents(conn);
 	});
 }
 
@@ -57,14 +67,6 @@ function ConnectToPeer(peerId){
 	if(peer === undefined){
 		//Shouldn't be needed to test as this should be done on page load
 		alert("Not connected to server");
-		return false;
-	}
-	else if(connection === undefined){
-		alert("Not connected to any peers");
-		return false;
-	}
-	else if(peerId === undefined){
-		alert("No input");
 		return false;
 	}
 
@@ -79,9 +81,12 @@ function ConnectToPeer(peerId){
 	}
 
 	//Actual connection
-	connection = peer.connect(peerId);
+	var conn = peer.connect(peerId);
 
-	console.log("Connected to another peer");
+	$("#ConnectToPeer").text("Connecting...");
+
+	//Set up connection when we connect to someone
+	SetConnectionEvents(conn);
 }
 
 //This function is run after whole DOM has been loaded
@@ -94,14 +99,8 @@ $(document).ready(function() {
 		ConnectToPeer();
 	});
 	$("#Disconnect").on('click', function(){
-		if(peer === undefined){
-			alert("Not connected to a server"); //Is this even needed?
-		}
-		else{
-			peer.destroy(); //destroy() or disconnect() based on what we're going to make
-			peer = undefined; connection = undefined;
-			console.log("Disconnected from brokering server");
-		}
+		connection.close();
+		connection = undefined;
 	});
 
 	$("#Send").on('click', function(){
@@ -116,7 +115,9 @@ $(document).ready(function() {
 		}
 
 		//Actual send data
-		SendData(connection, "bet this doesn't work yet");
+		console.log(new Date().getTime());
+		var k = $("#dataChannelSend").val();
+		SendData(connection, k);
 		$("#dataChannelSend").val(""); //clear textbox
 	});
 	
