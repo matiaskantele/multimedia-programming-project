@@ -9,7 +9,7 @@
 //Initialize vars here to make them global
 var peer = undefined;
 var connection = undefined; //Connection to another peer, should be made an array in future for possible multiple connections
-var serverInfo = {ownID: 'kone1', hostname: '82.130.14.29', port: 7500};
+var serverInfo = {hostname: '82.130.14.29', port: 7500};
 
 function HandleReceivedData(conn, data){
 	//Supposedly game related data receiving goes here
@@ -28,10 +28,8 @@ function RegisterToServer(){
 	//Register to server using info above. Timeouts/errors if server is not running.
 	//Server is off by default, ask Kura2 in IRC if you need it
 	//Note: Server should assign a random ID to peer when ID is omitted from constructor
-	//...but I got some strange http.open bug in peer.js when i tested that locally so i left the ID there
 	//Another note: There is no reason not to run this function immediately on page load
-	//...if there wasn't that damn ID assignment error when testing locally, that is
-	peer = new Peer(serverInfo.ownID, {host: serverInfo.hostname, port: serverInfo.port}, {'iceServers':[{'url':'stun:stun.l.google.com:19302'}]});
+	peer = new Peer({host: serverInfo.hostname, port: serverInfo.port}, {'iceServers':[{'url':'stun:stun.l.google.com:19302'}]});
 
 	//Error handling
 	peer.on('error', function(error){
@@ -90,10 +88,7 @@ function ConnectToPeer(peerId){
 $(document).ready(function() {
 
 	//Bind functions to html elements
-	$("#ConnectToServer").on('click', function(){
-		//Should be run on page load instead of having a separate button
-		RegisterToServer();
-	});
+	RegisterToServer();
 
 	$("#ConnectToPeer").on('click', function(){
 		ConnectToPeer();
