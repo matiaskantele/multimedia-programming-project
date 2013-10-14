@@ -10,6 +10,13 @@
    Base styles: opinionated defaults
    ========================================================================== */
 
+/*OMAT*/
+
+#DebugControls{
+    display:none;   
+}
+
+/*OMAT END*/
 html,
 button,
 input,
@@ -304,5 +311,3 @@ canvas {
     }
 }
 
-#Textareas{
-}
