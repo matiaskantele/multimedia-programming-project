@@ -5,7 +5,6 @@ var serverInfo = {hostname: '82.130.14.29', port: 7500};
 
 function HandleReceivedData(conn, data){
 	//Game related data receiving goes here
-
 	$("#dataChannelRecieve").val(data);
 	console.log(data);
 }
@@ -36,6 +35,7 @@ function SetConnectionEvents(conn){
 	});
 
 	conn.on('error', function(err){
+		$("#ConnectToPeer").text("Connect to Peer");
 		console.log("ERROR!!!");
 		console.log(err.message);
 	});
@@ -101,18 +101,6 @@ $(document).ready(function() {
 
 	$("#ConnectToPeer").on('click', function(){
 		ConnectToPeer();
-	});
-	$("#Disconnect").on('click', function(){
-		if(peer === undefined){
-			alert("Not connected to a server"); //Is this even needed?
-		}
-		else{
-			peer.destroy(); //destroy() or disconnect() based on what we're going to make
-			peer = undefined; connection = undefined;
-			console.log("Disconnected from brokering server");
-		}
-		connection.close();
-		connection = undefined;
 	});
 
 	$("#Send").on('click', function(){
