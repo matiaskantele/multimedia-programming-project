@@ -35,6 +35,11 @@ function SetConnectionEvents(conn){
   		console.log(new Date().getTime());
    		HandleReceivedData(conn, data);
 	});
+
+	conn.on('error', function(err){
+		console.log("ERROR!!!");
+		console.log(err.message);
+	});
 }
 
 function RegisterToServer(){
