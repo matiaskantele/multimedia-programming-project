@@ -6,7 +6,7 @@ var serverInfo = {hostname: '82.130.14.29', port: 7500};
 function HandleReceivedData(conn, data){
 	//Game related data receiving goes here
 
-	$("dataChannelRecieve").val(data);
+	$("#dataChannelRecieve").val(data);
 	console.log(data);
 }
 
@@ -32,7 +32,6 @@ function SetConnectionEvents(conn){
 
 	//When we recieve data from remote peer
   	conn.on('data', function(data){
-  		console.log(new Date().getTime());
    		HandleReceivedData(conn, data);
 	});
 
@@ -128,12 +127,10 @@ $(document).ready(function() {
 		}
 
 		//Actual send data
-		console.log(new Date().getTime());
 		var k = $("#dataChannelSend").val();
 		SendData(connection, k);
 		$("#dataChannelSend").val(""); //clear textbox
 	});
-	
 });
 
 /*
