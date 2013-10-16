@@ -12,7 +12,7 @@ function RegisterToServer() {
 	connectionBroker.on('error', function(error){
 		$('#myId').css('color', '#C44D58');
 		$('#myId').css('text-shadow', '0 0 0.1em #C44D58, 0 0 0.1em #C44D58, 0 0 0.1em #C44D58');
-		$('#myId').text("No connection to server");
+		$('#myId').text("No connection to connection broker");
 	});
 
 	// This is run after we've successfully connected to server and recieved an ID
