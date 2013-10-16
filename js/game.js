@@ -212,6 +212,8 @@ THREE JS STUFF BELOW
 
 
 /*
+=======
+>>>>>>> feature/front_page
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
@@ -243,6 +245,7 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
+<<<<<<< HEAD
 var peer = new Peer({key: 'jlr92mqbkkai3sor'});
 
 
