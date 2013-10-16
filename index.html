@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Multimedia project</title>
+        <title>Duellum Solari</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -15,32 +15,26 @@
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
-        <script src="js/vendor/peer.min.js"></script>
         <script src="js/vendor/three.min.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
+        <div id="welcomeScreen">
+            <span id="myId">ID: </span>
 
-        <!-- Add your site or application content here -->
-
-        <span id="OwnID">Not Connected to server!</span>
-
-        <div id="buttons">
-            <button id="ConnectToPeer">Connect to Peer</button>
-            <button id="Send">Send</button>
+            <div id="connectToId">
+                <input type="text" id="playerName" placeholder="Player name"></textarea>
+                <input type="text" id="connectTo" placeholder="Opponent's ID"></textarea>
+                <button id="connect">Connect</button>
+            </div>
         </div>
-
-        <div id="Input box">
-        	<textarea id="dataChannelSend" placeholder="Sendbox" style="margin: 0px 2px; height: 100px; width: 300px;"></textarea>
-        </div>
-        <div id="Recieve box">
-        	<textarea id="dataChannelRecieve" placeholder="Recieved data" style="margin: 0px 2px; height: 300px; width: 300px;"></textarea>
-        </div>
+        
         <script src="js/vendor/jquery-2.0.3.min.js"></script>
         <script src="js/peer.js"></script>
         <script src="js/plugins.js"></script>
+        <script src="js/game.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
