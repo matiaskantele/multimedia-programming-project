@@ -71,8 +71,6 @@ function SetConnectionEvents(conn) {
 		alert('Disconnected from opponent!');
 	});
 
-	RunGame();
-
 	// When we recieve data from remote peer
   	conn.on('data', function(data) {
    		console.log(data);
@@ -102,4 +100,6 @@ $(document).ready(function() {
 			alert("Connection to opponent failed");
 		}
 	});
+
+	RunGame();
 });
