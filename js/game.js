@@ -7,6 +7,8 @@ var highlightBox;
 var mouse = new THREE.Vector2();
 var offset = new THREE.Vector3( 10, 10, 10 );
 
+var skyBox;
+
 function RunGame(){
 	init();
 	animate();
@@ -16,6 +18,7 @@ function init() {
 
 	container = document.getElementById( "container" );
 
+	cameraCube = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000);
 	camera.position.z = 1000;
 
@@ -54,6 +57,24 @@ function init() {
 	pickingMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } ),
 	defaultMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors	} );
 
+
+	// Skybox
+	var imagePrefix = "img/";
+	var imageSuffix = '.jpg';
+	var directions = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
+	var skyGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );	
+	
+	var materialArray = [];
+	for (var i = 0; i < 6; i++)
+		materialArray.push( new THREE.MeshBasicMaterial({
+			map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+			side: THREE.BackSide
+		}));
+	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+	skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+	scene.add( skyBox );
+
+
 	function applyVertexColors( g, c ) {
 
 		g.faces.forEach( function( f ) {
@@ -70,13 +91,13 @@ function init() {
 
 	}
 
-	for ( var i = 0; i < 5000; i ++ ) {
+	for ( var i = 0; i < 49; i ++ ) {
 
 		var position = new THREE.Vector3();
 
-		position.x = Math.random() * 10000 - 5000;
-		position.y = Math.random() * 6000 - 3000;
-		position.z = Math.random() * 8000 - 4000;
+		position.x = Math.random() * 500-250;// 10000 - 5000;
+		position.y = Math.random() * 300-150;//6000 - 3000;
+		position.z = Math.random() * 400-200;//8000 - 4000;
 
 		var rotation = new THREE.Euler();
 
@@ -86,9 +107,9 @@ function init() {
 
 		var scale = new THREE.Vector3();
 
-		scale.x = Math.random() * 200 + 100;
-		scale.y = Math.random() * 200 + 100;
-		scale.z = Math.random() * 200 + 100;
+		scale.x = Math.random() * 100 + 50;//200 + 100;
+		scale.y = Math.random() * 100 + 50;//200 + 100;
+		scale.z = Math.random() * 100 + 50;//200 + 100;
 
 		// give the geom's vertices a random color, to be displayed
 
@@ -200,6 +221,8 @@ function render() {
 
 	pick();
 
+	skyBox.position.copy( camera.position );
+	
 	renderer.render( scene, camera );
 
 }
