@@ -95,11 +95,8 @@ function ReceiveData(data){
 
 	// Data must be an array
 	if(!(data instanceof Array)){
-		alert("Received invalid format data!");
+		console.log("Received invalid format data: "+data);
 		return;
-	}
-	else{
-		console.log("Received invalid format data: " + data);
 	}
 
 	// Received data format: ["command", value], note that value can be another array, dict etc...
