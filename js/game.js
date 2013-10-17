@@ -16,10 +16,19 @@ function init() {
 
 	container = document.getElementById( "container" );
 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000);
 	camera.position.z = 1000;
 
-	controls = new THREE.TrackballControls( camera );
+	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
+	renderer.setClearColor( 0xffffff, 1 );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.sortObjects = false;
+
+	container.appendChild( renderer.domElement );
+
+	renderer.domElement.addEventListener( 'mousemove', onMouseMove );
+
+	controls = new THREE.TrackballControls( camera , renderer.domElement );
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 1.2;
 	controls.panSpeed = 0.8;
@@ -126,15 +135,6 @@ function init() {
 	scene.add( highlightBox );
 
 	projector = new THREE.Projector();
-
-	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
-	renderer.setClearColor( 0xffffff, 1 );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.sortObjects = false;
-
-	container.appendChild( renderer.domElement );
-
-	renderer.domElement.addEventListener( 'mousemove', onMouseMove );
 
 }
 
