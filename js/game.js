@@ -147,10 +147,16 @@ function init() {
 
 	}
 
-	var drawnObject = new THREE.Mesh( geometry, defaultMaterial );
-	scene.add( drawnObject );
+	var icosGeo = new THREE.IcosahedronGeometry( 500, 2 );
+	var icosMat = new THREE.MeshBasicMaterial({color: 'red', wireframe: true});
 
-	pickingScene.add( new THREE.Mesh( pickingGeometry, pickingMaterial ) );
+	var drawnSphere = new THREE.Mesh( icosGeo, icosMat);
+	scene.add( drawnSphere);
+
+	var drawnObject = new THREE.Mesh( geometry, defaultMaterial );
+	//scene.add( drawnObject );
+
+	//pickingScene.add( new THREE.Mesh( pickingGeometry, pickingMaterial ) );
 
 	highlightBox = new THREE.Mesh( new THREE.CubeGeometry( 1, 1, 1 ), new THREE.MeshLambertMaterial( { color: 0xffff00 } ) );
 	scene.add( highlightBox );
