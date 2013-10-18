@@ -8,6 +8,8 @@ var mouse = new THREE.Vector2();
 var offset = new THREE.Vector3( 10, 10, 10 );
 
 var skyBox;
+var drawnSphere;
+var raycaster;
 
 function RunGame(){
 	init();
@@ -18,19 +20,19 @@ function init() {
 
 	container = document.getElementById( "container" );
 
-	cameraCube = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 100 );
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000);
+	// Camera
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000);
 	camera.position.z = 1000;
 
+	// Renderer
 	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
 	renderer.setClearColor( 0xffffff, 1 );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.sortObjects = false;
-
 	container.appendChild( renderer.domElement );
 
+	// Trackball controls
 	renderer.domElement.addEventListener( 'mousemove', onMouseMove );
-
 	controls = new THREE.TrackballControls( camera , renderer.domElement );
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 1.2;
@@ -40,30 +42,20 @@ function init() {
 	controls.staticMoving = true;
 	controls.dynamicDampingFactor = 0.3;
 
+	// Scene
 	scene = new THREE.Scene();
 
-	pickingScene = new THREE.Scene();
-	pickingTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
-	pickingTexture.generateMipmaps = false;
-
+	// Lights
 	scene.add( new THREE.AmbientLight( 0x555555 ) );
-
 	var light = new THREE.SpotLight( 0xffffff, 1.5 );
 	light.position.set( 0, 500, 2000 );
 	scene.add( light );
-
-	var geometry = new THREE.Geometry(),
-	pickingGeometry = new THREE.Geometry(),
-	pickingMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } ),
-	defaultMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors	} );
-
 
 	// Skybox
 	var imagePrefix = "img/";
 	var imageSuffix = '.jpg';
 	var directions = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
 	var skyGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );	
-	
 	var materialArray = [];
 	for (var i = 0; i < 6; i++)
 		materialArray.push( new THREE.MeshBasicMaterial({
@@ -74,209 +66,76 @@ function init() {
 	skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 	scene.add( skyBox );
 
-
-	function applyVertexColors( g, c ) {
-
-		g.faces.forEach( function( f ) {
-
-			var n = ( f instanceof THREE.Face3 ) ? 3 : 4;
-
-			for( var j = 0; j < n; j ++ ) {
-
-				f.vertexColors[ j ] = c;
-
-			}
-
-		} );
-
+	// Icosahedron sphere
+	var icosGeo = new THREE.IcosahedronGeometry( 200, 2 );
+	var icosMat = new THREE.MeshPhongMaterial({color: 0xffffff, vertexColors: THREE.FaceColors}); //Unique colors for each face... i guess?
+	for ( var i = 0; i < icosGeo.faces.length; i++ ){
+		face  = icosGeo.faces[ i ];	
+		face.color.setRGB( 0.0, 0.66, 0.91);		
 	}
-
-	for ( var i = 0; i < 49; i ++ ) {
-
-		var position = new THREE.Vector3();
-
-		position.x = Math.random() * 500-250;// 10000 - 5000;
-		position.y = Math.random() * 300-150;//6000 - 3000;
-		position.z = Math.random() * 400-200;//8000 - 4000;
-
-		var rotation = new THREE.Euler();
-
-		rotation.x = Math.random() * 2 * Math.PI;
-		rotation.y = Math.random() * 2 * Math.PI;
-		rotation.z = Math.random() * 2 * Math.PI;
-
-		var scale = new THREE.Vector3();
-
-		scale.x = Math.random() * 100 + 50;//200 + 100;
-		scale.y = Math.random() * 100 + 50;//200 + 100;
-		scale.z = Math.random() * 100 + 50;//200 + 100;
-
-		// give the geom's vertices a random color, to be displayed
-
-		var geom = new THREE.CubeGeometry( 1, 1, 1 );
-		var color = new THREE.Color( Math.random() * 0xffffff );
-		applyVertexColors( geom, color );
-
-		var cube = new THREE.Mesh( geom );
-		cube.position.copy( position );
-		cube.rotation.copy( rotation );
-		cube.scale.copy( scale );
-
-		THREE.GeometryUtils.merge( geometry, cube );
-
-		//give the pickingGeom's vertices a color corresponding to the "id"
-
-		var pickingGeom = new THREE.CubeGeometry( 1, 1, 1 );
-		var pickingColor = new THREE.Color( i );
-		applyVertexColors( pickingGeom, pickingColor );
-
-		var pickingCube = new THREE.Mesh( pickingGeom );
-		pickingCube.position.copy( position );
-		pickingCube.rotation.copy( rotation );
-		pickingCube.scale.copy( scale );
-
-		THREE.GeometryUtils.merge( pickingGeometry, pickingCube );
-
-		pickingData[ i ] = {
-
-			position: position,
-			rotation: rotation,
-			scale: scale
-
-		};
-
-	}
-
-	var icosGeo = new THREE.IcosahedronGeometry( 500, 2 );
-	var icosMat = new THREE.MeshBasicMaterial({color: 'red', wireframe: true});
-
-	var drawnSphere = new THREE.Mesh( icosGeo, icosMat);
+	drawnSphere = new THREE.Mesh( icosGeo, icosMat);
 	scene.add( drawnSphere);
 
-	var drawnObject = new THREE.Mesh( geometry, defaultMaterial );
-	//scene.add( drawnObject );
-
-	//pickingScene.add( new THREE.Mesh( pickingGeometry, pickingMaterial ) );
-
-	highlightBox = new THREE.Mesh( new THREE.CubeGeometry( 1, 1, 1 ), new THREE.MeshLambertMaterial( { color: 0xffff00 } ) );
-	scene.add( highlightBox );
-
 	projector = new THREE.Projector();
-
+	raycaster = new THREE.Raycaster();
 }
 
-//
 
 function onMouseMove( e ) {
-
-	mouse.x = e.clientX;
-	mouse.y = e.clientY;
-
+	e.preventDefault();
+	mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 }
 
 function animate() {
-
 	requestAnimationFrame( animate );
-
 	render();
-
 }
 
-function pick() {
-
-	//render the picking scene off-screen
-
-	renderer.render( pickingScene, camera, pickingTexture );
-
-	var gl = self.renderer.getContext();
-
-	//read the pixel under the mouse from the texture
-
-	var pixelBuffer = new Uint8Array( 4 );
-	gl.readPixels( mouse.x, pickingTexture.height - mouse.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixelBuffer );
-
-	//interpret the pixel as an ID
-
-	var id = ( pixelBuffer[0] << 16 ) | ( pixelBuffer[1] << 8 ) | ( pixelBuffer[2] );
-	var data = pickingData[ id ];
-
-	if ( data) {
-
-		//move our highlightBox so that it surrounds the picked object
-
-		if ( data.position && data.rotation && data.scale ){
-
-			highlightBox.position.copy( data.position );
-			highlightBox.rotation.copy( data.rotation );
-			highlightBox.scale.copy( data.scale ).add( offset );
-			highlightBox.visible = true;
-
-		}
-
-	} else {
-
-		highlightBox.visible = false;
-
-	}
-
-}
+// Really dirty to use 3 global vars for the mouseover highlight but cba to think better way atm
+var faceUnderMouse = undefined;
+var previousColor = undefined;
+var previousIntersect = undefined;
 
 function render() {
 
+	// Trackball controls
 	controls.update();
 
-	pick();
+	// Raycast from camera to under mouse
+	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
+	projector.unprojectVector(vector, camera);
+	raycaster.set(camera.position, vector.sub(camera.position).normalize());
+	var intersects = raycaster.intersectObjects([drawnSphere], true);
 
+	// Set face color under cursor
+	if(intersects.length > 0){
+		if(intersects[0].face !== faceUnderMouse){
+			if(faceUnderMouse !== undefined){
+				faceUnderMouse.color = previousColor;
+			}
+
+			previousIntersect = intersects[0];
+			faceUnderMouse = intersects[0].face;
+			previousColor = new THREE.Color(faceUnderMouse.color);
+			faceUnderMouse.color.setRGB(1,0,0);
+			intersects[0].object.geometry.colorsNeedUpdate = true;
+		}
+	}
+	else{
+		if(faceUnderMouse !== undefined){
+			// Remove face color if cursor moved out of the sphere
+			faceUnderMouse.color = previousColor;
+			previousIntersect.object.geometry.colorsNeedUpdate = true;
+		}
+		previousIntersect = undefined;
+		previousColor = undefined;
+		faceUnderMouse = undefined;
+	}
+
+	// Hacky way of preventing camera moving relative to skybox
 	skyBox.position.copy( camera.position );
 	
 	renderer.render( scene, camera );
 
 }
-
-/*
-
-THREE JS STUFF BELOW
-
-*/
-
-
-/*
-=======
->>>>>>> feature/front_page
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-
-var renderer = new THREE.WebGLRenderer( { antialias: true } );
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-var geometry = new THREE.CubeGeometry(2,2,2);
-var material = new THREE.MeshBasicMaterial({color: 'red', wireframe: true});
-var cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-camera.position.z = 5;
-
-window.addEventListener( 'resize', onWindowResize, false );
-
-var render = function () {
-	requestAnimationFrame(render);
-
-	cube.rotation.x += 0.02;
-	cube.rotation.y += 0.02;
-
-	renderer.render(scene, camera);
-};
-
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-}
-
-<<<<<<< HEAD
-var peer = new Peer({key: 'jlr92mqbkkai3sor'});
-
-
-render();
-*/
