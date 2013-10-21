@@ -68,10 +68,7 @@ function init() {
 
 	// Icosahedron sphere
 	var icosGeo = new THREE.IcosahedronGeometry( 200, 2 );
-	var waterTexture = THREE.ImageUtils.loadTexture('img/water.jpg');
-	waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping;
-	waterTexture.repeat.set(1,1);
-	var icosMat = new THREE.MeshPhongMaterial({map: waterTexture /*,color: 0xffffff*/, vertexColors: THREE.FaceColors}); //Unique colors for each face... i guess?
+	var icosMat = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture('img/water.jpg') /*,color: 0xffffff*/, vertexColors: THREE.FaceColors}); //Unique colors for each face... i guess?
 	for ( var i = 0; i < icosGeo.faces.length; i++ ){
 		face  = icosGeo.faces[ i ];	
 		face.color.setRGB( 0.0, 0.66, 0.91);		
