@@ -114,7 +114,6 @@ function init() {
 		var phi = Math.random()*(2*Math.PI);
 		var costheta = (1-2*Math.round(Math.random())) * Math.random();		
 		var theta = Math.acos(costheta);
-		var r = distance * Math.pow(Math.random(), 3);
 
 		var pX = distance * Math.sin(theta) * Math.cos(phi);
 		var pY = distance * Math.sin(theta) * Math.sin(phi);
