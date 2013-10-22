@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Multimedia project</title>
+        <title>Duellum Solari</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -15,34 +15,169 @@
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
-        <script src="js/vendor/peer.min.js"></script>
         <script src="js/vendor/three.min.js"></script>
+        <script src="js/vendor/tween.min.js"></script>
+        <script src="js/vendor/TrackballControls.js"></script>
+        <script src="js/vendor/hammer.min.js"></script>
+        <script id="waterVertexShader" type="x-shader/x-vertex">
+            uniform sampler2D noiseTexture;
+            uniform float noiseScale;
+
+            uniform sampler2D bumpTexture;
+            uniform float bumpSpeed;
+            uniform float bumpScale;
+
+            uniform float time;
+
+            varying vec2 vUv;
+
+            void main() 
+            { 
+                vUv = uv;
+                
+                vec2 uvTimeShift = vUv + vec2( 1.1, 1.9 ) * time * bumpSpeed;
+                vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+                vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
+                // below, using uvTimeShift seems to result in more of a "rippling" effect
+                //   while uvNoiseTimeShift seems to result in more of a "shivering" effect
+                vec4 bumpData = texture2D( bumpTexture, uvTimeShift );
+
+                // move the position along the normal
+                //  but displace the vertices at the poles by the same amount
+                float displacement = ( vUv.y > 0.999 || vUv.y < 0.001 ) ? 
+                    bumpScale * (0.3 + 0.02 * sin(time)) :  
+                    bumpScale * bumpData.r;
+                vec3 newPosition = position + normal * displacement;
+                
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+            }
+        </script>
+        <script id="waterFragmentShader" type="x-shader/x-fragment">
+            uniform sampler2D baseTexture;
+            uniform float baseSpeed;
+            uniform float repeatS;
+            uniform float repeatT;
+
+            uniform sampler2D noiseTexture;
+            uniform float noiseScale;
+
+            uniform sampler2D blendTexture;
+            uniform float blendSpeed;
+            uniform float blendOffset;
+
+            uniform float time;
+            uniform float alpha;
+
+            varying vec2 vUv;
+
+            void main() 
+            {
+                vec2 uvTimeShift = vUv + vec2( -0.7, 1.5 ) * time * baseSpeed;  
+                vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+                vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.b );
+                vec4 baseColor = texture2D( baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT) );
+
+                vec2 uvTimeShift2 = vUv + vec2( 1.3, -1.7 ) * time * blendSpeed;    
+                vec4 noiseGeneratorTimeShift2 = texture2D( noiseTexture, uvTimeShift2 );
+                vec2 uvNoiseTimeShift2 = vUv + noiseScale * vec2( noiseGeneratorTimeShift2.g, noiseGeneratorTimeShift2.b );
+                vec4 blendColor = texture2D( blendTexture, uvNoiseTimeShift2 * vec2(repeatS, repeatT) ) - blendOffset * vec4(1.0, 1.0, 1.0, 1.0);
+
+                vec4 theColor = baseColor + blendColor;
+                theColor.a = alpha;
+                gl_FragColor = theColor;
+            }
+        </script>
+        <script id="sandVertexShader" type="x-shader/x-vertex">
+            uniform sampler2D noiseTexture;
+            uniform float noiseScale;
+
+            uniform sampler2D bumpTexture;
+            uniform float bumpSpeed;
+            uniform float bumpScale;
+
+            uniform float time;
+
+            varying vec2 vUv;
+
+            void main() 
+            { 
+                vUv = uv;
+                
+                vec2 uvTimeShift = vUv + vec2( 1.1, 1.9 ) * time * bumpSpeed;
+                vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+                vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
+                // below, using uvTimeShift seems to result in more of a "rippling" effect
+                //   while uvNoiseTimeShift seems to result in more of a "shivering" effect
+                vec4 bumpData = texture2D( bumpTexture, uvTimeShift );
+
+                // move the position along the normal
+                //  but displace the vertices at the poles by the same amount
+                float displacement = ( vUv.y > 0.999 || vUv.y < 0.001 ) ? 
+                    bumpScale * (0.3 + 0.02 * sin(time)) :  
+                    bumpScale * bumpData.r;
+                vec3 newPosition = position + normal * displacement;
+                
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+            }
+        </script>
+        <script id="sandFragmentShader" type="x-shader/x-fragment">
+            uniform sampler2D baseTexture;
+            uniform float baseSpeed;
+            uniform float repeatS;
+            uniform float repeatT;
+
+            uniform sampler2D noiseTexture;
+            uniform float noiseScale;
+
+            uniform sampler2D blendTexture;
+            uniform float blendSpeed;
+            uniform float blendOffset;
+
+            uniform float time;
+            uniform float alpha;
+
+            varying vec2 vUv;
+
+            void main() 
+            {
+                vec2 uvTimeShift = vUv + vec2( -0.7, 1.5 ) * time * baseSpeed;  
+                vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+                vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.b );
+                vec4 baseColor = texture2D( baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT) );
+
+                vec2 uvTimeShift2 = vUv + vec2( 1.3, -1.7 ) * time * blendSpeed;    
+                vec4 noiseGeneratorTimeShift2 = texture2D( noiseTexture, uvTimeShift2 );
+                vec2 uvNoiseTimeShift2 = vUv + noiseScale * vec2( noiseGeneratorTimeShift2.g, noiseGeneratorTimeShift2.b );
+                vec4 blendColor = texture2D( blendTexture, uvNoiseTimeShift2 * vec2(repeatS, repeatT) ) - blendOffset * vec4(1.0, 1.0, 1.0, 1.0);
+
+                vec4 theColor = baseColor + blendColor;
+                theColor.a = alpha;
+                gl_FragColor = theColor;
+            }
+        </script>
     </head>
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        <!-- Add your site or application content here -->
-
-        <span id="OwnID">Not Connected to server!</span>
-
-        <div id="buttons">
-        	<button id="ConnectToServer">Connect to Server</button>
-            <button id="ConnectToPeer">Connect to Peer</button>
-            <button id="Send">Send</button>
-            <button id="Disconnect">Disconnect</button>
+        <div id="welcomeScreen">
+            <span id="myId">ID: </span>
+            <div id="connectToId">
+                <input type="text" id="playerName" placeholder="Player name"></textarea>
+                <input type="text" id="connectTo" placeholder="Opponent's ID"></textarea>
+                <button id="connect">Connect</button>
+            </div>
         </div>
 
-        <div id="Input box">
-        	<textarea id="dataChannelSend" placeholder="Sendbox" style="margin: 0px 2px; height: 100px; width: 300px;"></textarea>
+        <div id="container">
         </div>
-        <div id="Recieve box">
-        	<textarea id="dataChannelRecieve" placeholder="Recieved data" disabled="" style="margin: 0px 2px; height: 300px; width: 300px;"></textarea>
-        </div>
+
         <script src="js/vendor/jquery-2.0.3.min.js"></script>
-        <script src="js/peer.js"></script>
+        <script src="js/TouchControls.js"></script>
+        <script src="js/vendor/peer.min.js"></script>
         <script src="js/plugins.js"></script>
+        <script src="js/game.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
