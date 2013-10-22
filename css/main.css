@@ -96,9 +96,110 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+body {
+    background-color: black;
+}
+
 canvas {
+    position: fixed;
     height: 100%;
     width: 100%;
+    z-index: 1
+}
+
+#welcomeScreen {
+    position: fixed;
+    z-index: 5;
+    width: 100%;
+    height: 70px;
+    top: 60%;
+}
+
+input:focus {
+    box-shadow: 0px 0px 3pt 2pt #C7F464;
+    outline: none;
+}
+
+#myId {
+    padding-left: 6px;
+    color: #C7F464;
+    font-size: 2em;
+    text-shadow: 0 0 0.1em #C7F464, 0 0 0.1em #C7F464, 0 0 0.1em #C7F464;
+}
+
+#connectToId {
+    margin-left: 100%;
+    width: 100%;
+    height: 50px;
+    padding-left: 50%;
+    background-color: #4ECDC4;
+    -moz-box-shadow: inset 280px 10px 210px 10px #000000;
+    -webkit-box-shadow: inset 280px 10px 210px 10px #000000;
+    box-shadow: inset 280px 10px 210px 10px #000000;
+    animation-name: slideLeft;
+    -webkit-animation-name: slideLeft;
+    animation-delay: 1s;
+    -webkit-animation-delay: 1s;
+    animation-duration: 2s;
+    -webkit-animation-duration: 2s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes slideLeft {
+    100% { margin-left: 0%; }
+}
+
+@keyframes slideLeft {
+    100% { margin-left: 0%; }
+}
+
+#playerName {
+    border-radius: 6px;
+    height: 30px;
+    margin-top: 6px;
+    padding-left: 6px;
+}
+
+#connectTo {
+    border-radius: 6px;
+    height: 30px;
+    margin: 0 auto;
+    width: 130px;
+    padding-left: 6px;
+}
+
+#connect {
+    height: 35px;
+    margin: 0 auto;
+    border: none;
+    background: #4ECDC4;
+    background-color: #C7F464;
+    color: #0E2725;
+    line-height: 22px;
+    text-decoration: none;
+    border-radius: 6px;
+    -webkit-transition: 0.25s linear;
+    -moz-transition: 0.25s linear;
+    -o-transition: 0.25s linear;
+    transition: 0.25s linear;
+    -webkit-backface-visibility: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+#connect:hover {
+    background-color: #cacfd2;
+    color: #ffffff;
+    outline: none;
+    -webkit-transition: 0.25s;
+    -moz-transition: 0.25s;
+    -o-transition: 0.25s;
+    transition: 0.25s;
+    -webkit-backface-visibility: hidden;
 }
 
 
@@ -303,3 +404,4 @@ canvas {
         page-break-after: avoid;
     }
 }
+
