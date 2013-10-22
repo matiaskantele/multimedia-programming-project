@@ -103,27 +103,31 @@ function init() {
 	cursorParticle.scale.set(50, 50, 1.0);
 	scene.add(cursorParticle);
 
-	//Starfield (prototype)
+	//Starfield
 	var count = 1000;
-	var particlesGeo = new THREE.BufferGeometry();
-	particlesGeo.attributes = {
-		position: {itemSize: 3,array: new Float32Array( count * 3 ),numItems: count * 3}
-	};
+	var particles = new THREE.Geometry();
 
-	var positions = particlesGeo.attributes.position.array;
+	for(var i=0; i<count; i++){
+		
+		var distance = 10000+Math.random()*10000;
 
-	for( var i=0; i<positions.length; i+=3 ){
-		var multiplier = 1-2*Math.round(Math.random());
-		positions[i] = multiplier*(Math.random()*30000);
-		multiplier = 1-2*Math.round(Math.random());
-		positions[i+1] = multiplier*(Math.random()*30000);
-		multiplier = 1-2*Math.round(Math.random());
-		positions[i+2] = multiplier*(Math.random()*30000);
+		var phi = Math.random()*(2*Math.PI);
+		var costheta = (1-2*Math.round(Math.random())) * Math.random();		
+		var theta = Math.acos(costheta);
+		var r = distance * Math.pow(Math.random(), 3);
+
+		var pX = distance * Math.sin(theta) * Math.cos(phi);
+		var pY = distance * Math.sin(theta) * Math.sin(phi);
+		var pZ = distance * Math.cos(theta);
+
+		particle = new THREE.Vertex(new THREE.Vector3(pX,pY,pZ));
+
+		particles.vertices.push(particle);
 	}
 
-	var partmat = new THREE.ParticleBasicMaterial({vertexColors: true, color:0xffffff, size: 100});
-	var particles = new THREE.ParticleSystem( particlesGeo, partmat );
-	scene.add(particles);
+	var partmat = new THREE.ParticleBasicMaterial({map: THREE.ImageUtils.loadTexture("img/particle.png"), blending: THREE.AdditiveBlending, transparent:true, color:0xffffff, size: 100});
+	var starfield = new THREE.ParticleSystem( particles, partmat );
+	scene.add(starfield);
 
 	//Projector and raycaster
 	projector = new THREE.Projector();
