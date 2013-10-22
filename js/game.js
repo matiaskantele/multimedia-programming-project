@@ -136,7 +136,15 @@ function init() {
 // Note! This should be handled by hammer js events, e.g. "OnTap"
 // This current implementation triggers even when dragging so it's not viable!
 function onMouseDown(e){
-	//CreateParticle();
+	// Raycast from camera to under mouse
+	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
+	projector.unprojectVector(vector, camera);
+	raycaster.set(camera.position, vector.sub(camera.position).normalize());
+	var intersects = raycaster.intersectObjects(objects, true);
+
+	if(intersects.length > 0){
+		planetToFollowPos = intersects[0].object.position;
+	}
 }
 
 function onMouseMove( e ) {
@@ -165,9 +173,8 @@ function render() {
 
 }
 
-var k = new THREE.Vector3(0,0,0);
-var k2 = new THREE.Vector3(0,0,0);
-var k3 = new THREE.Vector3(0,0,0);
+var cameraMovementVector = new THREE.Vector3(0,0,0);
+var planetToFollowPos = new THREE.Vector3(0,0,0);
 function TrackPointUnderMouse(){
 	// Raycast from camera to under mouse
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
@@ -175,20 +182,13 @@ function TrackPointUnderMouse(){
 	raycaster.set(camera.position, vector.sub(camera.position).normalize());
 	var intersects = raycaster.intersectObjects(objects, true);
 
-	// If intersect
+	cameraMovementVector.subVectors(planetToFollowPos , controls.target).multiplyScalar(0.1);
+
 	if(intersects.length > 0){
-
-		k2 = intersects[0].object.position;
-
 		cursorParticle.position = intersects[0].point;
-
-		k3.subVectors(intersects[0].point, intersects[0].object.position).multiplyScalar(0.05);
-		cursorParticle.position.add(k);
 	}
-
-	k.subVectors(k2 , controls.target).multiplyScalar(0.1);
-	controls.object.position.add(k);
-	controls.target.add(k);
+	controls.object.position.add(cameraMovementVector);
+	controls.target.add(cameraMovementVector);
 }
 
 function CreateParticle(){
@@ -199,7 +199,6 @@ function CreateParticle(){
 	raycaster.set(camera.position, vector.sub(camera.position).normalize());
 	var intersects = raycaster.intersectObjects(objects, true);
 
-	// If intersect
 	if(intersects.length > 0){
 		var wat = new THREE.IcosahedronGeometry( 50, 1 );
 		var wat2 = new THREE.MeshPhongMaterial({color: 0xffffff}); 
