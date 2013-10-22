@@ -103,6 +103,29 @@ function init() {
 	cursorParticle.scale.set(50, 50, 1.0);
 	scene.add(cursorParticle);
 
+	//Starfield (prototype)
+	var count = 1000;
+	var particlesGeo = new THREE.BufferGeometry();
+	particlesGeo.attributes = {
+		position: {itemSize: 3,array: new Float32Array( count * 3 ),numItems: count * 3}
+	};
+
+	var positions = particlesGeo.attributes.position.array;
+
+	for( var i=0; i<positions.length; i+=3 ){
+		var multiplier = 1-2*Math.round(Math.random());
+		positions[i] = multiplier*(Math.random()*30000);
+		multiplier = 1-2*Math.round(Math.random());
+		positions[i+1] = multiplier*(Math.random()*30000);
+		multiplier = 1-2*Math.round(Math.random());
+		positions[i+2] = multiplier*(Math.random()*30000);
+	}
+
+	var partmat = new THREE.ParticleBasicMaterial({vertexColors: true, color:0xffffff, size: 100});
+	var particles = new THREE.ParticleSystem( particlesGeo, partmat );
+	scene.add(particles);
+
+	//Projector and raycaster
 	projector = new THREE.Projector();
 	raycaster = new THREE.Raycaster();
 }
@@ -133,7 +156,7 @@ function render() {
 	TrackPointUnderMouse();
 
 	// Hacky way of preventing camera moving relative to skybox
-	//skyBox.position.copy( camera.position );
+	skyBox.position.copy( camera.position );
 	
 	renderer.render( scene, camera );
 
@@ -141,6 +164,7 @@ function render() {
 
 var k = new THREE.Vector3(0,0,0);
 var k2 = new THREE.Vector3(0,0,0);
+var k3 = new THREE.Vector3(0,0,0);
 function TrackPointUnderMouse(){
 	// Raycast from camera to under mouse
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
@@ -154,9 +178,9 @@ function TrackPointUnderMouse(){
 		k2 = intersects[0].object.position;
 
 		cursorParticle.position = intersects[0].point;
-		cursorParticle.position.x += (intersects[0].point.x - intersects[0].object.position.x)*0.05;
-		cursorParticle.position.y += (intersects[0].point.y - intersects[0].object.position.y)*0.05;
-		cursorParticle.position.z += (intersects[0].point.z - intersects[0].object.position.z)*0.05;
+
+		k3.subVectors(intersects[0].point, intersects[0].object.position).multiplyScalar(0.05);
+		cursorParticle.position.add(k);
 	}
 
 	k.subVectors(k2 , controls.target).multiplyScalar(0.1);
