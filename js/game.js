@@ -3,15 +3,17 @@ var camera, controls, scene, renderer;
 var pickingData = [], pickingTexture, pickingScene;
 var objects = [];
 var highlightBox;
+var clock = new THREE.Clock();
 
 var mouse = new THREE.Vector2();
 var offset = new THREE.Vector3( 10, 10, 10 );
 
 var skyBox;
-var drawnSphere;
-var raycaster;
+var homePlanet;
+var raycaster = new THREE.Raycaster();
+var projector = new THREE.Projector();
 
-function RunGame(){
+function startGame(){
 	init();
 	animate();
 }
@@ -39,7 +41,6 @@ function init() {
 	controls.panSpeed = 0.8;
 	controls.noZoom = false;
 	controls.noPan = false;
-	controls.staticMoving = true;
 	controls.dynamicDampingFactor = 0.3;
 
 	// Scene
@@ -66,18 +67,77 @@ function init() {
 	skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 	scene.add( skyBox );
 
-	// Icosahedron sphere
-	var icosGeo = new THREE.IcosahedronGeometry( 200, 2 );
-	var icosMat = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture('img/water.jpg') /*,color: 0xffffff*/, vertexColors: THREE.FaceColors}); //Unique colors for each face... i guess?
-	for ( var i = 0; i < icosGeo.faces.length; i++ ){
-		face  = icosGeo.faces[ i ];	
-		face.color.setRGB( 0.0, 0.66, 0.91);		
-	}
-	drawnSphere = new THREE.Mesh( icosGeo, icosMat);
-	scene.add( drawnSphere);
+	// Homeplanet
 
-	projector = new THREE.Projector();
-	raycaster = new THREE.Raycaster();
+	// base image texture for mesh
+	var waterTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg');
+	waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 		
+	var baseSpeed = 0.0001;
+	// number of times to repeat texture in each direction
+	var repeatS = repeatT = 4.0;
+	
+	// texture used to generate "randomness", distort all other textures
+	var noiseTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.png' );
+	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+	// magnitude of noise effect
+	var noiseScale = 0.5;
+	
+	// texture to additively blend with base image texture
+	var blendTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg' );
+	blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 
+	var blendSpeed = 0.003;
+	// adjust lightness/darkness of blended texture
+	var blendOffset = 0.35;
+
+	// texture to determine normal displacement
+	var bumpTexture = noiseTexture;
+	bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+	// multiplier for distortion speed 		
+	var bumpSpeed   = 0.02;
+	// magnitude of normal displacement
+	var bumpScale   = 3.0;
+	
+	// use "this." to create global object
+	this.customUniforms = {
+		baseTexture: 	{ type: "t", value: waterTexture },
+		baseSpeed:		{ type: "f", value: baseSpeed },
+		repeatS:		{ type: "f", value: repeatS },
+		repeatT:		{ type: "f", value: repeatT },
+		noiseTexture:	{ type: "t", value: noiseTexture },
+		noiseScale:		{ type: "f", value: noiseScale },
+		blendTexture:	{ type: "t", value: blendTexture },
+		blendSpeed: 	{ type: "f", value: blendSpeed },
+		blendOffset: 	{ type: "f", value: blendOffset },
+		bumpTexture:	{ type: "t", value: bumpTexture },
+		bumpSpeed: 		{ type: "f", value: bumpSpeed },
+		bumpScale: 		{ type: "f", value: bumpScale },
+		alpha: 			{ type: "f", value: 1.0 },
+		time: 			{ type: "f", value: 1.0 }
+	};
+
+	// create custom material from the shader code above
+	//   that is within specially labeled script tags
+	var customMaterial = new THREE.ShaderMaterial( 
+	{
+	    uniforms: customUniforms,
+		vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent
+	}   );
+		
+	var ballGeometry = new THREE.SphereGeometry( 200, 64, 64 );
+	homePlanet = new THREE.Mesh( ballGeometry, customMaterial );
+	homePlanet.position.set(0, 65, 160);
+	scene.add( homePlanet );
+
+	window.addEventListener( 'resize', onWindowResize, false );
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 
@@ -102,11 +162,15 @@ function render() {
 	// Trackball controls
 	controls.update();
 
+	// Time for shader
+	var delta = clock.getDelta();
+	customUniforms.time.value += delta;
+
 	// Raycast from camera to under mouse
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
 	projector.unprojectVector(vector, camera);
 	raycaster.set(camera.position, vector.sub(camera.position).normalize());
-	var intersects = raycaster.intersectObjects([drawnSphere], true);
+	var intersects = raycaster.intersectObjects([homePlanet], true);
 
 	// Set face color under cursor
 	if(intersects.length > 0){
@@ -135,7 +199,7 @@ function render() {
 
 	// Hacky way of preventing camera moving relative to skybox
 	skyBox.position.copy( camera.position );
-	
+
 	renderer.render( scene, camera );
 
 }

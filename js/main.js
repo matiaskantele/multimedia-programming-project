@@ -130,5 +130,5 @@ $(document).ready(function() {
 		ConnectToOpponent();
 	});
 
-	RunGame();
+	startGame();
 });
