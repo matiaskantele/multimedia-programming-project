@@ -39,7 +39,7 @@ function init() {
 	controls.panSpeed = 0.8;
 	controls.noZoom = false;
 	controls.noPan = false;
-	controls.staticMoving = true;
+	controls.staticMoving = false;
 	controls.dynamicDampingFactor = 0.3;
 
 	// Scene
@@ -67,7 +67,7 @@ function init() {
 	scene.add( skyBox );
 
 	// Icosahedron sphere
-	var icosGeo = new THREE.IcosahedronGeometry( 200, 2 );
+	var icosGeo = new THREE.IcosahedronGeometry( 200, 3 );
 	var icosMat = new THREE.MeshPhongMaterial({map: THREE.ImageUtils.loadTexture('img/water.jpg') /*,color: 0xffffff*/, vertexColors: THREE.FaceColors}); //Unique colors for each face... i guess?
 	for ( var i = 0; i < icosGeo.faces.length; i++ ){
 		face  = icosGeo.faces[ i ];	
