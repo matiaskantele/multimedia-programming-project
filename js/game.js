@@ -77,61 +77,61 @@ function init() {
 	var waterTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg');
 	waterTexture.wrapS = waterTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 		
-	var baseSpeed = 0.0001;
+	var wBaseSpeed = 0.0001;
 	// number of times to repeat texture in each direction
-	var repeatS = repeatT = 4.0;
+	var wRepeatS = wRepeatT = 4.0;
 	
 	// texture used to generate "randomness", distort all other textures
-	var noiseTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.png' );
-	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+	var wNoiseTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.png' );
+	wNoiseTexture.wrapS = wNoiseTexture.wrapT = THREE.RepeatWrapping; 
 	// magnitude of noise effect
-	var noiseScale = 0.5;
+	var wNoiseScale = 0.5;
 	
 	// texture to additively blend with base image texture
-	var blendTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg' );
-	blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping; 
+	var wBlendTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg' );
+	wBlendTexture.wrapS = wBlendTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 
-	var blendSpeed = 0.003;
+	var wBlendSpeed = 0.003;
 	// adjust lightness/darkness of blended texture
-	var blendOffset = 0.35;
+	var wBlendOffset = 0.35;
 
 	// texture to determine normal displacement
-	var bumpTexture = noiseTexture;
-	bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+	var wBumpTexture = wNoiseTexture;
+	wBumpTexture.wrapS = wBumpTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 		
-	var bumpSpeed   = 0.02;
+	var wBumpSpeed   = 0.02;
 	// magnitude of normal displacement
-	var bumpScale   = 3.0;
+	var wBumpScale   = 3.0;
 	
 	// use "this." to create global object
-	this.customUniforms = {
+	this.waterUniforms = {
 		baseTexture: 	{ type: "t", value: waterTexture },
-		baseSpeed:		{ type: "f", value: baseSpeed },
-		repeatS:		{ type: "f", value: repeatS },
-		repeatT:		{ type: "f", value: repeatT },
-		noiseTexture:	{ type: "t", value: noiseTexture },
-		noiseScale:		{ type: "f", value: noiseScale },
-		blendTexture:	{ type: "t", value: blendTexture },
-		blendSpeed: 	{ type: "f", value: blendSpeed },
-		blendOffset: 	{ type: "f", value: blendOffset },
-		bumpTexture:	{ type: "t", value: bumpTexture },
-		bumpSpeed: 		{ type: "f", value: bumpSpeed },
-		bumpScale: 		{ type: "f", value: bumpScale },
+		baseSpeed:		{ type: "f", value: wBaseSpeed },
+		repeatS:		{ type: "f", value: wRepeatS },
+		repeatT:		{ type: "f", value: wRepeatT },
+		noiseTexture:	{ type: "t", value: wNoiseTexture },
+		noiseScale:		{ type: "f", value: wNoiseScale },
+		blendTexture:	{ type: "t", value: wBlendTexture },
+		blendSpeed: 	{ type: "f", value: wBlendSpeed },
+		blendOffset: 	{ type: "f", value: wBlendOffset },
+		bumpTexture:	{ type: "t", value: wBumpTexture },
+		bumpSpeed: 		{ type: "f", value: wBumpSpeed },
+		bumpScale: 		{ type: "f", value: wBumpScale },
 		alpha: 			{ type: "f", value: 1.0 },
 		time: 			{ type: "f", value: 1.0 }
 	};
 
 	// create custom material from the shader code above
 	//   that is within specially labeled script tags
-	var customMaterial = new THREE.ShaderMaterial( 
+	var waterMaterial = new THREE.ShaderMaterial( 
 	{
-	    uniforms: customUniforms,
+	    uniforms: waterUniforms,
 		vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent
 	}   );
 		
-	var ballGeometry = new THREE.SphereGeometry( 200, 64, 64 );
-	waterPlanet = new THREE.Mesh( ballGeometry, customMaterial );
+	var waterGeometry = new THREE.SphereGeometry( 200, 64, 64 );
+	waterPlanet = new THREE.Mesh( waterGeometry, waterMaterial );
 	waterPlanet.position.set(0, 65, 160);
 	objects.push(waterPlanet);
 	scene.add( waterPlanet );
@@ -141,61 +141,61 @@ function init() {
 	var sandTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg');
 	sandTexture.wrapS = sandTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 		
-	var baseSpeed = 0.0001;
+	var sBaseSpeed = 0.0001;
 	// number of times to repeat texture in each direction
-	var repeatS = repeatT = 4.0;
+	var sRepeatS = sRepeatT = 4.0;
 	
 	// texture used to generate "randomness", distort all other textures
-	var noiseTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.png' );
-	noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+	var sNoiseTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.png' );
+	sNoiseTexture.wrapS = sNoiseTexture.wrapT = THREE.RepeatWrapping; 
 	// magnitude of noise effect
-	var noiseScale = 0.5;
+	var sNoiseScale = 0.5;
 	
 	// texture to additively blend with base image texture
-	var blendTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg' );
-	blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping; 
+	var sBlendTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg' );
+	sBlendTexture.wrapS = sBlendTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 
-	var blendSpeed = 0.003;
+	var sBlendSpeed = 0.003;
 	// adjust lightness/darkness of blended texture
-	var blendOffset = 0.35;
+	var sBlendOffset = 0.35;
 
 	// texture to determine normal displacement
-	var bumpTexture = noiseTexture;
-	bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+	var sBumpTexture = sNoiseTexture;
+	sBumpTexture.wrapS = sBumpTexture.wrapT = THREE.RepeatWrapping; 
 	// multiplier for distortion speed 		
-	var bumpSpeed   = 0.02;
+	var sBumpSpeed   = 0.02;
 	// magnitude of normal displacement
-	var bumpScale   = 3.0;
+	var sBumpScale   = 3.0;
 	
 	// use "this." to create global object
-	this.customUniforms = {
+	this.sandUniforms = {
 		baseTexture: 	{ type: "t", value: sandTexture },
-		baseSpeed:		{ type: "f", value: baseSpeed },
-		repeatS:		{ type: "f", value: repeatS },
-		repeatT:		{ type: "f", value: repeatT },
-		noiseTexture:	{ type: "t", value: noiseTexture },
-		noiseScale:		{ type: "f", value: noiseScale },
-		blendTexture:	{ type: "t", value: blendTexture },
-		blendSpeed: 	{ type: "f", value: blendSpeed },
-		blendOffset: 	{ type: "f", value: blendOffset },
-		bumpTexture:	{ type: "t", value: bumpTexture },
-		bumpSpeed: 		{ type: "f", value: bumpSpeed },
-		bumpScale: 		{ type: "f", value: bumpScale },
+		baseSpeed:		{ type: "f", value: sBaseSpeed },
+		repeatS:		{ type: "f", value: sRepeatS },
+		repeatT:		{ type: "f", value: sRepeatT },
+		noiseTexture:	{ type: "t", value: sNoiseTexture },
+		noiseScale:		{ type: "f", value: sNoiseScale },
+		blendTexture:	{ type: "t", value: sBlendTexture },
+		blendSpeed: 	{ type: "f", value: sBlendSpeed },
+		blendOffset: 	{ type: "f", value: sBlendOffset },
+		bumpTexture:	{ type: "t", value: sBumpTexture },
+		bumpSpeed: 		{ type: "f", value: sBumpSpeed },
+		bumpScale: 		{ type: "f", value: sBumpScale },
 		alpha: 			{ type: "f", value: 1.0 },
 		time: 			{ type: "f", value: 1.0 }
 	};
 
 	// create custom material from the shader code above
 	//   that is within specially labeled script tags
-	var customMaterial = new THREE.ShaderMaterial( 
+	var sandMaterial = new THREE.ShaderMaterial( 
 	{
-	    uniforms: customUniforms,
-		vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent
+	    uniforms: sandUniforms,
+		vertexShader: document.getElementById( 'sandVertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'sandFragmentShader' ).textContent
 	}   );
 		
-	var ballGeometry = new THREE.SphereGeometry( 200, 64, 64 );
-	sandPlanet = new THREE.Mesh( ballGeometry, customMaterial );
+	var sandGeometry = new THREE.SphereGeometry( 200, 64, 64 );
+	sandPlanet = new THREE.Mesh( sandGeometry, sandMaterial );
 	sandPlanet.position.set(0, 65, 160);
 	sandPlanet.position.x -= 1000;
 	sandPlanet.position.z -= 1000;
@@ -279,7 +279,8 @@ function render() {
 
 	// Time for shader
 	var delta = clock.getDelta();
-	customUniforms.time.value += delta;
+	waterUniforms.time.value += delta;
+	sandUniforms.time.value += delta;
 
 	//Colors the face currently under mouse
 	TrackPointUnderMouse();
