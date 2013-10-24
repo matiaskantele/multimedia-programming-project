@@ -1,3 +1,16 @@
+//Dirty global variables
+var container;	//DOM container for the game
+var camera, controls, scene, renderer;
+var objects = []; //Objects that should be tested when raycasting
+var clock = new THREE.Clock();
+var skyBox;
+var waterPlanet;
+var sandPlanet;
+var raycaster = new THREE.Raycaster();
+var projector = new THREE.Projector();
+var cursorParticle;
+var offset = new THREE.Vector3( 10, 10, 10 );
+
 function addCamera(){
 	// Camera
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 100000);
@@ -6,7 +19,8 @@ function addCamera(){
 
 function setupRenderer(){
 	container = document.getElementById( "container" );
-
+	window.addEventListener( 'resize', onWindowResize, false );
+	
 	// Renderer
 	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
 	renderer.setClearColor( 0xffffff, 1 );
@@ -16,6 +30,7 @@ function setupRenderer(){
 }
 
 function addPlanets(){
+
 	// Water planet
 	// base image texture for mesh
 	var waterTexture = new THREE.ImageUtils.loadTexture( 'img/wat.jpg');
@@ -148,6 +163,7 @@ function addPlanets(){
 }
 
 function addSkybox(){
+
 	// Skybox
 	var imagePrefix = "img/";
 	var imageSuffix = '.jpg';
@@ -165,6 +181,7 @@ function addSkybox(){
 }
 
 function addLights(){
+
 	// Lights
 	scene.add( new THREE.AmbientLight( 0x555555 ) );
 	var light = new THREE.SpotLight( 0xffffff, 1.5 );
@@ -173,6 +190,7 @@ function addLights(){
 }
 
 function setupControls(){
+
 	// Trackball controls
 	renderer.domElement.addEventListener( 'mousemove', onMouseMove );
 	renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
@@ -188,6 +206,7 @@ function setupControls(){
 }
 
 function addCursorparticle(){
+
 	// Particle under cursor
 	var spriteMaterial = new THREE.SpriteMaterial( 
 	{ 
@@ -201,6 +220,7 @@ function addCursorparticle(){
 }
 
 function addStarfield(){
+
 	//Starfield
 	var count = 1000;
 	var particles = new THREE.Geometry();
