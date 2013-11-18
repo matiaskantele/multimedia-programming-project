@@ -1,15 +1,12 @@
 //Dirty global variables
 var container;	//DOM container for the game
 var camera, controls, scene, renderer;
-var objects = []; //Objects that should be tested when raycasting
+var objects = {}; //Objects in the scene
+objects.units = []; //Game units
 var clock = new THREE.Clock();
-var skyBox;
-var waterPlanet;
-var sandPlanet;
 var raycaster = new THREE.Raycaster();
 var projector = new THREE.Projector();
-var cursorParticle;
-var offset = new THREE.Vector3( 10, 10, 10 );
+var selectionScreenSelectedUnit = undefined; //Object to place when selected in unit selection screen
 
 function addCamera(){
 	// Camera
@@ -92,7 +89,8 @@ function addPlanets(){
 	var waterGeometry = new THREE.SphereGeometry( 200, 64, 64 );
 	waterPlanet = new THREE.Mesh( waterGeometry, waterMaterial );
 	waterPlanet.position.set(0, 65, 160);
-	objects.push(waterPlanet);
+	waterPlanet.name = "planet1";
+	objects.waterPlanet = waterPlanet;
 	scene.add( waterPlanet );
 
 	// Sandplanet
@@ -158,7 +156,8 @@ function addPlanets(){
 	sandPlanet.position.set(0, 65, 160);
 	sandPlanet.position.x -= 1000;
 	sandPlanet.position.z -= 1000;
-	objects.push(sandPlanet);
+	sandPlanet.name = "planet2";
+	objects.sandPlanet = sandPlanet;
 	scene.add( sandPlanet );
 }
 
@@ -177,6 +176,7 @@ function addSkybox(){
 		}));
 	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 	skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+	objects.skyBox = skyBox;
 	scene.add( skyBox );
 }
 
@@ -211,11 +211,12 @@ function addCursorparticle(){
 	var spriteMaterial = new THREE.SpriteMaterial( 
 	{ 
 		map: new THREE.ImageUtils.loadTexture( 'img/glow.png' ), 
-		useScreenCoordinates: false, alignment: THREE.SpriteAlignment.center,
+		useScreenCoordinates: false, /*alignment: THREE.SpriteAlignment.center,*/
 		color: 0xff0000, transparent: false, blending: THREE.AdditiveBlending
 	});
 	cursorParticle = new THREE.Sprite( spriteMaterial );
 	cursorParticle.scale.set(50, 50, 1.0);
+	objects.cursorParticle = cursorParticle;
 	scene.add(cursorParticle);
 }
 
@@ -245,4 +246,17 @@ function addStarfield(){
 	var partmat = new THREE.ParticleBasicMaterial({map: THREE.ImageUtils.loadTexture("img/particle.png"), blending: THREE.AdditiveBlending, transparent:true, color:0xffffff, size: 100});
 	var starfield = new THREE.ParticleSystem( particles, partmat );
 	scene.add(starfield);
+}
+
+//Loads dummyunit.obj and sets is as the object to place (should be made general to any object)
+function addDummyUnit(){
+
+	var loader = new THREE.OBJMTLLoader();
+	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object){
+		
+		//Loader makes the obj file content the CHILDREN of the returned object for god knows what reason
+		//This .children[2] is a very dirty hack for this loader nonsense that took way too long to find
+		//Most likely breaks for all other .obj files
+		selectionScreenSelectedUnit = object.children[2];
+	});
 }
