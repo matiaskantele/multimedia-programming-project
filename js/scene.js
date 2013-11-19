@@ -280,7 +280,7 @@ function setupControls() {
 	renderer.domElement.addEventListener('mousemove', onMouseMove);
 	renderer.domElement.addEventListener('mousedown', onMouseDown, false);
 
-	controls = new THREE.TrackballControls(camera, renderer.domElement);
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
 	controls.rotateSpeed = 1.0;
 	controls.zoomSpeed = 1.2;
 	controls.panSpeed = 0.8;
@@ -288,6 +288,8 @@ function setupControls() {
 	controls.noPan = false;
 	controls.staticMoving = false;
 	controls.dynamicDampingFactor = 0.3;
+	controls.minDistance = 500;
+	controls.maxDistance = 15000;
 }
 
 function addCursorparticle() {
