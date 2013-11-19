@@ -21,7 +21,6 @@
         <script src="js/vendor/tween.min.js"></script>
         <script src="js/vendor/TrackballControls.js"></script>
         <script src="js/vendor/hammer.min.js"></script>
-        <script src="js/shaders.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -37,9 +36,12 @@
             </div>
         </div>
 
-        <div id="container">
-        </div>
+        <div id="container"></div>
 
+        <script id="waterVertex" type="x-shader/x-vertex"></script>
+        <script id="waterFragment" type="x-shader/x-fragment"></script>
+        <script id="sandVertex" type="x-shader/x-vertex"></script>
+        <script id="sandFragment" type="x-shader/x-fragment"></script>
         <script src="js/vendor/jquery-2.0.3.min.js"></script>
         <script src="js/TouchControls.js"></script>
         <script src="js/vendor/peer.min.js"></script>
