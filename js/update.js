@@ -142,9 +142,39 @@ function PlaceselectionScreenSelectedUnit(pos){
 	$("#selectscreen").show();
 }
 
+//Moves given unit to arg position
 function MoveUnit(unit, position){
 	//TODO, smooth movement going to be ass to implement yay
-	console.log("MOVE");
-	console.log(unit);
-	console.log(position);
+
+	//Crapload of variables to determine which planet plr is on and what he clicked
+	var plr2WatPlanet = new THREE.Vector3().subVectors(unit.position, objects.waterPlanet.position);
+	var plr2SndPlanet = new THREE.Vector3().subVectors(unit.position, objects.sandPlanet.position);
+	var click2WatPlanet = new THREE.Vector3().subVectors(position, objects.waterPlanet.position);
+	var click2SndPlanet = new THREE.Vector3().subVectors(position, objects.sandPlanet.position);
+	
+	var waterPlanetClicked = false;
+	if(click2WatPlanet.length() < click2SndPlanet.length()) waterPlanetClicked = true;
+
+	var plrOnWaterPlanet = false;
+	if(plr2WatPlanet.length() < plr2SndPlanet.length()) plrOnWaterPlanet = true;
+
+	//Prevent moving to another planet
+	if((!waterPlanetClicked && plrOnWaterPlanet) || (waterPlanetClicked && !plrOnWaterPlanet)){
+		return;
+	}
+
+	//Actual moving based on the planet plr is on (maybe we should include this info in the object...)
+	var pos = new THREE.Vector3();
+	if(plrOnWaterPlanet && waterPlanetClicked) pos.subVectors(position, objects.waterPlanet.position);
+	else if(!plrOnWaterPlanet && !waterPlanetClicked) pos.subVectors(position, objects.sandPlanet.position);
+	
+	pos.multiplyScalar(0.1); //Prevents unit being half inside planet....
+	pos.addVectors(pos, position);
+
+	unit.position = pos;
+
+	//Set rotation
+	if(plrOnWaterPlanet && waterPlanetClicked) unit.lookAt(objects.waterPlanet.position);
+	else if(!plrOnWaterPlanet && !waterPlanetClicked) unit.lookAt(objects.sandPlanet.position);
+	
 }

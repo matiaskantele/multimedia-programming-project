@@ -64,6 +64,9 @@ function SetConnectionEvents(conn) {
 			playerName = "Unnamed";
 		}
 		SendData(connection, ["OpponentName", playerName]);
+
+		//Show unit selection screen
+		ShowUnitSelection();
 	});
 
 	// When remote peer connection is closed
@@ -121,7 +124,7 @@ function ReceiveData(data){
 }
 
 //Show the screen for unit selection
-//Oh god why didn't I put the css in the css file ZZZZZZZZZZZZZ
+//Oh god why didn't I put the css in the css file
 function ShowUnitSelection(){
 
 	//Actual div
@@ -169,7 +172,7 @@ function ShowUnitSelection(){
 		'background-size':'contain'
 	}).on('click', function(){
 		addDummyUnit();
-		$("#selectscreen").hide();
+		$("#selectscreen").fadeOut('fast');
 	});
 
 	//Cost text for unit 1
@@ -210,7 +213,7 @@ function ShowUnitSelection(){
 // This function is run after whole DOM has been loaded
 $(document).ready(function() {
 
-	ShowUnitSelection();
+	//ShowUnitSelection(); //Here for debugging purposes
 
 	// Bind functions to html elements
 	RegisterToServer();
