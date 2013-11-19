@@ -64,6 +64,9 @@ function SetConnectionEvents(conn) {
 			playerName = "Unnamed";
 		}
 		SendData(connection, ["OpponentName", playerName]);
+
+		//Show unit selection screen
+		ShowUnitSelection();
 	});
 
 	// When remote peer connection is closed
@@ -120,8 +123,97 @@ function ReceiveData(data){
 	}
 }
 
+//Show the screen for unit selection
+//Oh god why didn't I put the css in the css file
+function ShowUnitSelection(){
+
+	//Actual div
+	var $selectscreen = $("<div id='selectscreen' />").css({
+		'color':'rgb(240,140,30)',
+		'z-index':2,
+		'width':'600px',
+		'height':'300px',
+		'position':'absolute',
+		'top': (Math.max(0, (($(window).height()- 300)/ 2))-100) + "px",
+		'left': Math.max(0, (($(window).width() - 600)/ 2))      + "px",
+		'border':'5px solid rgba(0,0,0,0.5)',
+		'background-color':'rgba(200,200,200,0.5)'
+	});
+
+	//Insert into DOM
+	$("#container").after($selectscreen);
+
+	//Selectionbox text
+	var $selectscreentext = $("<span id='selectscreentext' />").css({
+		'color':'black',
+		'text-shadow': '0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white',
+		'font-size':'200%',
+		'position':'relative',
+		'z-index':3,
+		'top':'10px',
+		'margin':'0px auto'
+	}).html('Select your unit<br />Remaining money: '+money);
+
+	//Dummy div for <span> centering
+	var $dummydiv = $("<div id='dummy' />").css({'text-align':'center'})
+	$selectscreen.append($dummydiv);
+	$dummydiv.append($selectscreentext);
+
+	//Button for an unit
+	var $unit1btn = $("<div id='unit1btn' />").css({
+		'z-index':3,
+		'position':'relative',
+		'width':'100px',
+		'height':'100px',
+		'left':'50px',
+		'top':'20px',
+		'border':'5px solid green',
+		'background': 'url(img/dummybox.png)',
+		'background-size':'contain'
+	}).on('click', function(){
+		addDummyUnit();
+		$("#selectscreen").fadeOut('fast');
+	});
+
+	//Cost text for unit 1
+	var $unit1cost = $("<span id='unit1cost' />").css({
+		'z-index':3,
+		'position':'relative',
+		'left':'50px',
+		'top':'20px',
+		'font-size':'120%',
+		'color':'red'
+	}).html('200');
+
+	//Append btn
+	$selectscreen.append($unit1btn);
+
+	//Cost text
+	$unit1btn.after($unit1cost);
+
+	//Button to finish unit placement
+	var $finishbtn = $("<div id='unit1btn' />").css({
+		'z-index':3,
+		'position':'absolute',
+		'width':'200px',
+		'height':'80px',
+		'left':'100%',
+		'top':'30%',
+		'background-color':'rgba(255,100,100,0.8)',
+		'color':'black',
+		'font-size':'120%'
+	}).html('Finish unit selection').on('click', function(){
+		$("#selectscreen").hide();
+		//.. Send other player message about finishing unit placement etc...
+	});
+
+	$selectscreen.append($finishbtn);
+}
+
 // This function is run after whole DOM has been loaded
 $(document).ready(function() {
+
+	//ShowUnitSelection(); //Here for debugging purposes
 
 	// Bind functions to html elements
 	RegisterToServer();

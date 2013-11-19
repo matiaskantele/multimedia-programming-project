@@ -1,3 +1,5 @@
+var money = 1000;
+
 // Initial function to start the game
 function startGame() {
 
