@@ -1,42 +1,20 @@
 var money = 1000;
+var ownPlanetIndex = Math.random(); //If this is higher than opponent index, then you get planet 2
+var ownPlanet = 1; //1 = water, 2 = sand
 
 // Initial function to start the game
 function startGame() {
 
-	var wvReady = false;
-	var wfReady = false;
-	var svReady = false;
-	var sfReady = false;
-
-	var initialize = function() {
-		if (wvReady && wfReady && svReady && sfReady) {
-			init();
-			run();
-		}
-	}
-
-	$.get("shader/waterVertex.glsl", function(data) {
-		$("#waterVertex").text(data);
-		wvReady = true;
-		initialize();
+	//Load shaders
+	$("#waterVertex").load("shader/waterVertex.glsl", function(){
+	$("#waterFragment").load("shader/waterFragment.glsl", function(){
+	$("#sandVertex").load("shader/sandVertex.glsl", function(){
+	$("#sandFragment").load("shader/sandFragment.glsl", function(){
+		init();
+		run();
 	});
-
-	$.get("shader/waterFragment.glsl", function(data) {
-		$("#waterFragment").text(data);
-		wfReady = true;
-		initialize();
 	});
-
-	$.get("shader/sandVertex.glsl", function(data) {
-		$("#sandVertex").text(data);
-		svReady = true;
-		initialize();
 	});
-
-	$.get("shader/sandFragment.glsl", function(data) {
-		$("#sandFragment").text(data);
-		sfReady = true;
-		initialize();
 	});
 }
 
@@ -51,7 +29,7 @@ function init() {
 	addLights();
 	addSkybox();
 	addPlanets();
-	addCursorparticle();
+	//addCursorObject();
 	addStarfield();
 }
 

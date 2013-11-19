@@ -293,7 +293,7 @@ function setupControls() {
 	controls.maxDistance = 15000;
 }
 
-function addCursorparticle() {
+function addCursorObject() {
 
 	// Particle under cursor
 	var spriteMaterial = new THREE.SpriteMaterial( 
@@ -304,10 +304,10 @@ function addCursorparticle() {
 		transparent: false,
 		blending: THREE.AdditiveBlending
 	});
-	cursorParticle = new THREE.Sprite(spriteMaterial);
-	cursorParticle.scale.set(50, 50, 1.0);
-	objects.cursorParticle = cursorParticle;
-	scene.add(cursorParticle);
+	cursorObject = new THREE.Sprite(spriteMaterial);
+	cursorObject.scale.set(50, 50, 1.0);
+	objects.cursorObject = cursorObject;
+	scene.add(cursorObject);
 }
 
 function addStarfield() {
@@ -354,5 +354,8 @@ function addDummyUnit(){
 		//This .children[2] is a very dirty hack for this loader nonsense that took way too long to find
 		//Most likely breaks for all other .obj files
 		selectionScreenSelectedUnit = object.children[2];
+
+		objects.cursorObject = selectionScreenSelectedUnit;
+		scene.add(objects.cursorObject);
 	});
 }

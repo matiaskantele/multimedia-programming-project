@@ -65,6 +65,8 @@ function SetConnectionEvents(conn) {
 		}
 		SendData(connection, ["OpponentName", playerName]);
 
+		SendData(connection, ["PlanetIndex" , ownPlanetIndex]);
+
 		//Show unit selection screen
 		ShowUnitSelection();
 	});
@@ -117,6 +119,22 @@ function ReceiveData(data){
 			console.log("Connected to " + data[1]);
 			break;
 
+		//Define the planet you are assigned
+		case "PlanetIndex":
+			ownPlanet = 1; //1 = water, 2 = sand
+			if(ownPlanetIndex > data[1]){
+				ownPlanet = 2;
+			}
+
+			if(ownPlanet == 1){
+				planetToFollowPos = objects.waterPlanet.position;
+			}
+			else{
+				planetToFollowPos = objects.sandPlanet.position;
+			}
+
+			break;
+
 		default:
 			// Unknown command
 			console.log("Unknown command: " + data);
@@ -124,35 +142,21 @@ function ReceiveData(data){
 }
 
 //Show the screen for unit selection
-//Oh god why didn't I put the css in the css file
 function ShowUnitSelection(){
 
+	var cssfile = {rel:'stylesheet',type:'text/css',href:'css/main.css'};
+
 	//Actual div
-	var $selectscreen = $("<div id='selectscreen' />").css({
-		'color':'rgb(240,140,30)',
-		'z-index':2,
-		'width':'600px',
-		'height':'300px',
-		'position':'absolute',
+	var $selectscreen = $("<div id='selectscreen' />", cssfile).css({
 		'top': (Math.max(0, (($(window).height()- 300)/ 2))-100) + "px",
-		'left': Math.max(0, (($(window).width() - 600)/ 2))      + "px",
-		'border':'5px solid rgba(0,0,0,0.5)',
-		'background-color':'rgba(200,200,200,0.5)'
+		'left': Math.max(0, (($(window).width() - 600)/ 2))      + "px"
 	});
 
 	//Insert into DOM
 	$("#container").after($selectscreen);
 
 	//Selectionbox text
-	var $selectscreentext = $("<span id='selectscreentext' />").css({
-		'color':'black',
-		'text-shadow': '0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white, 0px 0px 10px white',
-		'font-size':'200%',
-		'position':'relative',
-		'z-index':3,
-		'top':'10px',
-		'margin':'0px auto'
-	}).html('Select your unit<br />Remaining money: '+money);
+	var $selectscreentext = $("<span id='selectscreentext' />",cssfile).html('Select your unit<br />Remaining money: '+money);
 
 	//Dummy div for <span> centering
 	var $dummydiv = $("<div id='dummy' />").css({'text-align':'center'})
@@ -160,49 +164,29 @@ function ShowUnitSelection(){
 	$dummydiv.append($selectscreentext);
 
 	//Button for an unit
-	var $unit1btn = $("<div id='unit1btn' />").css({
-		'z-index':3,
-		'position':'relative',
-		'width':'100px',
-		'height':'100px',
-		'left':'50px',
-		'top':'20px',
-		'border':'5px solid green',
-		'background': 'url(img/dummybox.png)',
-		'background-size':'contain'
+	var $unit1btn = $("<div class='unitbtn' />",cssfile).css({
+		'background' : 'url(img/dummybox.png)',
+		'background-size' : 'contain'
 	}).on('click', function(){
+		if(money - parseInt($unit1cost.html()) < 0) return; //Should show error "not enough money blabla"
+		money -= parseInt($unit1cost.html());
 		addDummyUnit();
 		$("#selectscreen").fadeOut('fast');
+		$selectscreentext.html('Select your unit<br />Remaining money: '+money);
 	});
 
 	//Cost text for unit 1
-	var $unit1cost = $("<span id='unit1cost' />").css({
-		'z-index':3,
-		'position':'relative',
+	var $unit1cost = $("<span class='unitcost' />", cssfile).css({
 		'left':'50px',
-		'top':'20px',
-		'font-size':'120%',
-		'color':'red'
+    	'top':'20px'
 	}).html('200');
 
-	//Append btn
+	//Insert
 	$selectscreen.append($unit1btn);
-
-	//Cost text
 	$unit1btn.after($unit1cost);
 
 	//Button to finish unit placement
-	var $finishbtn = $("<div id='unit1btn' />").css({
-		'z-index':3,
-		'position':'absolute',
-		'width':'200px',
-		'height':'80px',
-		'left':'100%',
-		'top':'30%',
-		'background-color':'rgba(255,100,100,0.8)',
-		'color':'black',
-		'font-size':'120%'
-	}).html('Finish unit selection').on('click', function(){
+	$finishbtn = $("<div id='finishselection' />", cssfile).html('Finish unit selection').on('click', function(){
 		$("#selectscreen").hide();
 		//.. Send other player message about finishing unit placement etc...
 	});

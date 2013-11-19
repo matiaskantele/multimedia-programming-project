@@ -1,3 +1,4 @@
+precision mediump float;
 uniform sampler2D baseTexture;
 uniform float baseSpeed;
 uniform float repeatS;

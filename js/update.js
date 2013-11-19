@@ -30,7 +30,7 @@ function UpdateShaders(){
 	sandUniforms.time.value += delta;
 }
 
-// Draws a red sprite under cursor
+//Tracks the points and intersects under mouse every frame
 function TrackPointUnderMouse(){
 
 	// Raycast from camera to under mouse
@@ -44,26 +44,10 @@ function TrackPointUnderMouse(){
 		true);
 
 	if(intersects.length > 0){
-		objects.cursorParticle.position = intersects[0].point;
-	}
-}
-
-// Creates a icosahedron under the cursor (used to demo point selection)
-function CreateParticle(){
-
-	// Raycast from camera to under mouse
-	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
-	projector.unprojectVector(vector, camera);
-	raycaster.set(camera.position, vector.sub(camera.position).normalize());
-	var intersects = raycaster.intersectObjects([objects.sandPlanet, objects.waterPlanet], true);
-
-	if(intersects.length > 0){
-		var wat = new THREE.IcosahedronGeometry( 50, 1 );
-		var wat2 = new THREE.MeshPhongMaterial({color: 0xffffff}); 
-		var itemzz = new THREE.Mesh( wat, wat2);
-
-		itemzz.position = intersects[ 0 ].point;
-		scene.add( itemzz );
+		if(objects.cursorObject !== undefined){
+			objects.cursorObject.position = intersects[0].point;
+			objects.cursorObject.lookAt(intersects[0].object.position);
+		}
 	}
 }
 
@@ -96,16 +80,12 @@ function onMouseDown(e){
 
 		//If an unit has been selected in unit selection screen
 		if(selectionScreenSelectedUnit !== undefined){
-			var pos = new THREE.Vector3();
-			pos.subVectors(intersects[0].point, objects.waterPlanet.position);
-			pos.multiplyScalar(0.1); //Prevents unit being half inside planet....
-			pos.addVectors(pos, intersects[0].point);
-			PlaceselectionScreenSelectedUnit(pos);
+			PlaceselectionScreenSelectedUnit(intersects[0].point, intersects[0].object.name);
 		}
 
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
-			MoveUnit(selectedUnit, intersects[0].point);
+			MoveUnit(selectedUnit, intersects[0].point, intersects[0].object.name);
 			selectedUnit = undefined;
 		}
 
@@ -128,10 +108,32 @@ function onMouseMove( e ) {
 }
 
 //Places the object that was selected in unit selection to arg position
-function PlaceselectionScreenSelectedUnit(pos){
+function PlaceselectionScreenSelectedUnit(intersectPt, clickedObject){
 
-	selectionScreenSelectedUnit.position = pos;
-	selectionScreenSelectedUnit.lookAt(objects.waterPlanet.position);
+	if(ownPlanet == 1 && clickedObject != "planet1"){
+		return;
+	}
+	else if(ownPlanet == 2 && clickedObject != "planet2"){
+		return;
+	}
+
+	var pos = new THREE.Vector3();
+
+	if(ownPlanet == 1){
+		pos.subVectors(intersectPt, objects.waterPlanet.position);
+		pos.multiplyScalar(0.1); //Prevents unit being half inside planet....
+		pos.addVectors(pos, intersectPt);
+		selectionScreenSelectedUnit.position = pos;
+		selectionScreenSelectedUnit.lookAt(objects.waterPlanet.position);
+	}
+	else if(ownPlanet == 2){
+		pos.subVectors(intersectPt, objects.sandPlanet.position);
+		pos.multiplyScalar(0.1); //Prevents unit being half inside planet....
+		pos.addVectors(pos, intersectPt);
+		selectionScreenSelectedUnit.position = pos;
+		selectionScreenSelectedUnit.lookAt(objects.sandPlanet.position);		
+	}
+
 	selectionScreenSelectedUnit.name = "unit";
 
 	objects.units.push(selectionScreenSelectedUnit);
@@ -139,42 +141,27 @@ function PlaceselectionScreenSelectedUnit(pos){
 
 	selectionScreenSelectedUnit = undefined;
 
+	objects.cursorObject = objects.temp;
+
 	$("#selectscreen").show();
 }
 
 //Moves given unit to arg position
-function MoveUnit(unit, position){
-	//TODO, smooth movement going to be ass to implement yay
+function MoveUnit(unit, position, clickedObject){
+	//TODO: smooth movement going to be ass to implement yay
+	//TODO: collision boxes between units (just simple distance calc over objects.units...)
 
-	//Crapload of variables to determine which planet plr is on and what he clicked
-	var plr2WatPlanet = new THREE.Vector3().subVectors(unit.position, objects.waterPlanet.position);
-	var plr2SndPlanet = new THREE.Vector3().subVectors(unit.position, objects.sandPlanet.position);
-	var click2WatPlanet = new THREE.Vector3().subVectors(position, objects.waterPlanet.position);
-	var click2SndPlanet = new THREE.Vector3().subVectors(position, objects.sandPlanet.position);
-	
-	var waterPlanetClicked = false;
-	if(click2WatPlanet.length() < click2SndPlanet.length()) waterPlanetClicked = true;
-
-	var plrOnWaterPlanet = false;
-	if(plr2WatPlanet.length() < plr2SndPlanet.length()) plrOnWaterPlanet = true;
-
-	//Prevent moving to another planet
-	if((!waterPlanetClicked && plrOnWaterPlanet) || (waterPlanetClicked && !plrOnWaterPlanet)){
-		return;
-	}
-
-	//Actual moving based on the planet plr is on (maybe we should include this info in the object...)
 	var pos = new THREE.Vector3();
-	if(plrOnWaterPlanet && waterPlanetClicked) pos.subVectors(position, objects.waterPlanet.position);
-	else if(!plrOnWaterPlanet && !waterPlanetClicked) pos.subVectors(position, objects.sandPlanet.position);
-	
-	pos.multiplyScalar(0.1); //Prevents unit being half inside planet....
-	pos.addVectors(pos, position);
-
-	unit.position = pos;
-
-	//Set rotation
-	if(plrOnWaterPlanet && waterPlanetClicked) unit.lookAt(objects.waterPlanet.position);
-	else if(!plrOnWaterPlanet && !waterPlanetClicked) unit.lookAt(objects.sandPlanet.position);
-	
+	if(ownPlanet == 1 && clickedObject == "planet1"){
+		pos.subVectors(position, objects.waterPlanet.position).multiplyScalar(0.1);
+		pos.addVectors(pos, position);
+		unit.position = pos;
+		unit.lookAt(objects.waterPlanet.position);
+	}
+	else if(ownPlanet == 2 && clickedObject == "planet2"){
+		pos.subVectors(position, objects.sandPlanet.position).multiplyScalar(0.1);
+		pos.addVectors(pos, position);
+		unit.position = pos;
+		unit.lookAt(objects.sandPlanet.position);
+	}
 }
