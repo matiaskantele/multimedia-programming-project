@@ -65,6 +65,8 @@ function SetConnectionEvents(conn) {
 		}
 		SendData(connection, ["OpponentName", playerName]);
 
+		SendData(connection, ["PlanetIndex" , ownPlanetIndex]);
+
 		//Show unit selection screen
 		ShowUnitSelection();
 	});
@@ -117,6 +119,22 @@ function ReceiveData(data){
 			console.log("Connected to " + data[1]);
 			break;
 
+		//Define the planet you are assigned
+		case "PlanetIndex":
+			ownPlanet = 1; //1 = water, 2 = sand
+			if(ownPlanetIndex > data[1]){
+				ownPlanet = 2;
+			}
+
+			if(ownPlanet == 1){
+				planetToFollowPos = objects.waterPlanet.position;
+			}
+			else{
+				planetToFollowPos = objects.sandPlanet.position;
+			}
+
+			break;
+
 		default:
 			// Unknown command
 			console.log("Unknown command: " + data);
@@ -154,7 +172,7 @@ function ShowUnitSelection(){
 		money -= parseInt($unit1cost.html());
 		addDummyUnit();
 		$("#selectscreen").fadeOut('fast');
-		$selectscreentext.html('Select your unit<br />Remaining money: '+money)
+		$selectscreentext.html('Select your unit<br />Remaining money: '+money);
 	});
 
 	//Cost text for unit 1
