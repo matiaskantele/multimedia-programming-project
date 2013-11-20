@@ -1,6 +1,6 @@
 var connectionBroker = undefined;
 var connection = undefined; //Connection to opponent
-var serverInfo = {hostname: '82.130.14.29', port: 7500};
+var serverInfo = {hostname: 'lair.dy.fi', port: 7500};
 var playerName = "";
 
 function RegisterToServer() {
