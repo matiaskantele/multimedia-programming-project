@@ -1,6 +1,6 @@
 var connectionBroker = undefined;
 var connection = undefined; //Connection to opponent
-var serverInfo = {hostname: 'lair.dy.fi', port: 7500};
+var serverInfo = {hostname: '127.0.0.1', port: 7500};//{hostname: 'lair.dy.fi', port: 7500};
 var playerName = "";
 
 function RegisterToServer() {
@@ -148,7 +148,7 @@ function ShowUnitSelection(){
 
 	//Actual div
 	var $selectscreen = $("<div id='selectscreen' />", cssfile).css({
-		'top': (Math.max(0, (($(window).height()- 300)/ 2))-100) + "px",
+		'bottom': (Math.max(0, (($(window).height()- 300)/ 2))-100) + "px",
 		'left': Math.max(0, (($(window).width() - 600)/ 2))      + "px"
 	});
 
@@ -192,6 +192,7 @@ function ShowUnitSelection(){
 	});
 
 	$selectscreen.append($finishbtn);
+
 }
 
 // This function is run after whole DOM has been loaded
@@ -204,6 +205,10 @@ $(document).ready(function() {
 
 	$('#connect').on('click', function() {
 		ConnectToOpponent();
+	});
+
+	$("#connectTo").on('keydown', function(e){
+		if(e.keyCode == 13) ConnectToOpponent();
 	});
 
 	startGame();

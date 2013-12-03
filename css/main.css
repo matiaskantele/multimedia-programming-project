@@ -205,7 +205,7 @@ input:focus {
 #selectscreen {
     color:rgb(240,140,30);
     z-index:2;
-    width:600px;
+    width:400px;
     height:300px;
     position:absolute;
     border:5px solid rgba(0,0,0,0.5);
