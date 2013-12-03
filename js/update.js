@@ -118,13 +118,24 @@ function onMouseDown(e){
 
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
+			
+			//Set color back to original
+			selectedUnit.material.color = selectedUnit.tempColor;
+			selectedUnit.material.needsUpdate = true;
+			
+			//Move
 			MoveUnit(selectedUnit, intersects[0].point, intersects[0].object.name);
 			selectedUnit = undefined;
 		}
 
-		//About to select unit
+		//Selecting an unit
 		else if(intersects[0].object.name == "unit"){
 			selectedUnit = intersects[0].object;
+
+			//Set color
+			selectedUnit.tempColor = selectedUnit.material.color;
+			selectedUnit.material.color = new THREE.Color(0xff0000); //white
+			selectedUnit.material.needsUpdate = true;
 		}
 
 		//Clicking on another planet
