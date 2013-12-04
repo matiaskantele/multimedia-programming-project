@@ -119,6 +119,10 @@ function ReceiveData(data){
 			console.log("Connected to " + data[1]);
 			break;
 
+		case "UnitPlacementFinished":
+			console.log(data);
+			break;
+
 		//Define the planet you are assigned
 		case "PlanetIndex":
 			ownPlanet = 1; //1 = water, 2 = sand
@@ -188,7 +192,15 @@ function ShowUnitSelection(){
 	//Button to finish unit placement
 	$finishbtn = $("<div id='finishselection' />", cssfile).html('Finish unit selection').on('click', function(){
 		$("#selectscreen").hide();
+
 		//.. Send other player message about finishing unit placement etc...
+		/*
+		var unit_positions = [];
+		$.each(objects.units, function(idx, obj){
+			unit_positions.push(Vec3List(obj.position));
+		});
+		SendData(connection, ["UnitPlacementFinished", unit_positions]);
+		*/
 	});
 
 	$selectscreen.append($finishbtn);
@@ -198,7 +210,9 @@ function ShowUnitSelection(){
 // This function is run after whole DOM has been loaded
 $(document).ready(function() {
 
-	//ShowUnitSelection(); //Here for debugging purposes
+	//Uncomment these to debug unit selection/placement
+	ShowUnitSelection();
+	$('#welcomeScreen').hide();
 
 	// Bind functions to html elements
 	RegisterToServer();
@@ -213,3 +227,13 @@ $(document).ready(function() {
 
 	startGame();
 });
+
+
+function Vec3List(vec){
+	return [vec.x, vec.y, vec.z];
+}
+
+function ListVec3(li){
+	var to_return = new THREE.Vector3(li[0], li[1], li[2]);
+	return to_return;
+}

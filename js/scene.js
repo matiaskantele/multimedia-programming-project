@@ -3,10 +3,12 @@ var container; //DOM container for the game
 var camera, controls, scene, renderer;
 var objects = {}; //Objects in the scene
 objects.units = []; //Game units
+objects.projectiles = []; //Active projectiles in scene
 var clock = new THREE.Clock();
 var raycaster = new THREE.Raycaster();
 var projector = new THREE.Projector();
 var selectionScreenSelectedUnit = undefined; //Object to place when selected in unit selection screen
+var missileTemplate; //Template for missile to clone from
 
 function addCamera() {
 	// Camera
@@ -357,5 +359,14 @@ function addDummyUnit(){
 
 		objects.cursorObject = selectionScreenSelectedUnit;
 		scene.add(objects.cursorObject);
+	});
+}
+
+function loadMissile(){
+
+	var loader = new THREE.OBJMTLLoader();
+	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object){
+		//Again the [2] hack...
+		missileTemplate = object.children[2];
 	});
 }

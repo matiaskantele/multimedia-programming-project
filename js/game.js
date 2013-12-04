@@ -1,6 +1,9 @@
 var money = 1000;
 var ownPlanetIndex = Math.random(); //If this is higher than opponent index, then you get planet 2
 var ownPlanet = 1; //1 = water, 2 = sand
+var particleRED; //Red particle loaded here for preloading purposes
+
+var enemyUnitPositions = [];
 
 // Initial function to start the game
 function startGame() {
@@ -29,8 +32,11 @@ function init() {
 	addLights();
 	addSkybox();
 	addPlanets();
-	//addCursorObject();
 	addStarfield();
+	loadMissile();
+
+	//Preload particle texture
+	particleRED = THREE.ImageUtils.loadTexture( 'img/smokeparticleRED.png');
 }
 
 // Game main loop

@@ -1,5 +1,7 @@
 var cameraMovementVector = new THREE.Vector3(0,0,0);
 var planetToFollowPos = new THREE.Vector3(0,0,0);
+var mouse = new THREE.Vector2();
+var deltaTime;
 
 // Update is called once per frame
 function update(){
@@ -13,7 +15,11 @@ function update(){
 	//Colors the point under cursor
 	TrackPointUnderMouse();
 
-	UnitPositions();
+	//Update unit positions
+	InterpolateUnitPositions();
+
+	//Interpolate missile movement and animate
+	InterpolateMissiles();
 
 	//Camera pivot point follows planetToFollowPos
 	cameraMovementVector.subVectors(planetToFollowPos , controls.target).multiplyScalar(0.1);
@@ -22,45 +28,6 @@ function update(){
 
 	// Prevent camera moving relative to skybox
 	objects.skyBox.position.copy( camera.position );
-}
-
-//Updates unit positions
-//Spherically interpolates between target point and current position, since we're not using trigonometry shit's expensive as hell
-function UnitPositions(){
-	$.each(objects.units, function(idx, obj){
-		if(!obj.targetPosition) return true;
-
-		var vectorDelta = new THREE.Vector3(obj.targetPosition.x, obj.targetPosition.y, obj.targetPosition.z);
-		vectorDelta.sub(obj.position);
-
-		//Interpolate only if we're more than 10 points away from target
-		if(vectorDelta.length() > 1.0){
-			//MATH
-			var r = obj.homePlanet.geometry.radius;
-			vectorDelta.multiplyScalar(0.1);
-
-			obj.position.add(vectorDelta);
-
-			vectorDelta.subVectors(obj.position, obj.homePlanet.position);
-			
-			vectorDelta.normalize();
-			vectorDelta.multiplyScalar(r*1.1);
-
-			var finalPoint = new THREE.Vector3();
-			finalPoint.addVectors(obj.homePlanet.position, vectorDelta);
-			obj.lookAt(finalPoint);
-
-			obj.position = finalPoint;
-		}
-	});
-}
-
-function UpdateShaders(){
-
-	// Time for shader
-	var delta = clock.getDelta();
-	waterUniforms.time.value += delta;
-	sandUniforms.time.value += delta;
 }
 
 //Tracks the points and intersects under mouse every frame
@@ -84,16 +51,6 @@ function TrackPointUnderMouse(){
 	}
 }
 
-/*
-//////////////////
-// INPUT EVENTS //
-//////////////////
-*/
-
-// Note! These should be handled by hammer js events, e.g. "OnTap"
-// Unsolved mystery: Do these events get processed before update() loop or after?
-
-var mouse = new THREE.Vector2();
 var selectedUnit = undefined; //Unit that has been selected in game situation
 
 // This current implementation triggers even when dragging so it's not viable!
@@ -119,6 +76,14 @@ function onMouseDown(e){
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
 			
+			if(selectedUnit.homePlanet !== intersects[0].object &&
+				((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet))
+				){
+
+				ShootMissile(selectedUnit, intersects[0]);
+				return;
+			}
+
 			//Set color back to original
 			selectedUnit.material.color = selectedUnit.tempColor;
 			selectedUnit.material.needsUpdate = true;
@@ -149,6 +114,149 @@ function onMouseMove( e ) {
 	e.preventDefault();
 	mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
 	mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+}
+
+function UpdateShaders(){
+
+	// Time for shader
+	deltaTime = clock.getDelta();
+	waterUniforms.time.value += deltaTime;
+	sandUniforms.time.value += deltaTime;
+}
+
+//Updates unit positions
+//Spherically interpolates between target point and current position, since we're not using trigonometry shit's expensive as hell
+function InterpolateUnitPositions(){
+	$.each(objects.units, function(idx, obj){
+		if(!obj.targetPosition) return true;
+
+		var vectorDelta = new THREE.Vector3(obj.targetPosition.x, obj.targetPosition.y, obj.targetPosition.z);
+		vectorDelta.sub(obj.position);
+
+		//Interpolate only if we're more than 10 points away from target
+		if(vectorDelta.length() > 1.0){
+			//MATH
+			var r = obj.homePlanet.geometry.radius;
+			vectorDelta.multiplyScalar(0.1);
+
+			obj.position.add(vectorDelta);
+
+			vectorDelta.subVectors(obj.position, obj.homePlanet.position);
+			
+			vectorDelta.normalize();
+			vectorDelta.multiplyScalar(r*1.1);
+
+			var finalPoint = new THREE.Vector3();
+			finalPoint.addVectors(obj.homePlanet.position, vectorDelta);
+			obj.lookAt(finalPoint);
+
+			obj.position = finalPoint;
+		}
+	});
+}
+
+//Interpolate missile movement and animate smoke
+function InterpolateMissiles(){
+
+	$.each(objects.projectiles, function(idx, obj){
+
+		obj.splineTime += 0.01;
+
+		//Check if missile reached target
+		if(obj.splineTime >= 1){
+			//Explosion+effect evaluation here...
+			scene.remove(obj.object);
+			objects.projectiles.splice(idx, 1);
+			return true;
+		}
+
+		obj.object.position = obj.route.getPointAt(obj.splineTime);
+
+		var axis = new THREE.Vector3();
+		var tangent = new THREE.Vector3();
+		var up = new THREE.Vector3(0,1,0);
+		
+		tangent = obj.route.getTangentAt(obj.splineTime).normalize();
+		axis.crossVectors(up, tangent).normalize();
+		var radians = Math.acos(up.dot(tangent));
+
+		obj.object.quaternion.setFromAxisAngle(axis, radians);
+	});
+
+}
+
+//Sets the target position for a given unit to arg position
+function MoveUnit(unit, position, clickedObject){
+	//minor fix: collision boxes between units (just simple distance calc over objects.units...) (prevent moving inside other unit)
+
+	var pos = new THREE.Vector3();
+	if(ownPlanet == 1 && clickedObject == "planet1"){
+		pos.subVectors(position, objects.waterPlanet.position).multiplyScalar(0.1);
+		pos.addVectors(pos, position);
+		unit.targetPosition = pos;
+		unit.lookAt(pos);
+	}
+	else if(ownPlanet == 2 && clickedObject == "planet2"){
+		pos.subVectors(position, objects.sandPlanet.position).multiplyScalar(0.1);
+		pos.addVectors(pos, position);
+		unit.targetPosition = pos;
+		unit.lookAt(pos);
+	}
+}
+
+//Shoots a new missile
+function ShootMissile(unit, clickIntersection){
+	//@TODO: Figure out how to prevent rockets from clipping by setting better spline points
+
+	//Calc start, 2 mid points and endpoint
+	var startPt = unit.position.clone();
+	var endPt = clickIntersection.point.clone();
+
+	var midPt = new THREE.Vector3();
+	//var midPt2 = new THREE.Vector3();
+
+	var temp = new THREE.Vector3();
+
+	temp.subVectors(unit.position, unit.homePlanet.position);
+	temp.multiplyScalar(5);
+
+	midPt.subVectors(objects.sandPlanet.position, objects.waterPlanet.position);
+	midPt.add(temp);
+
+	/*
+	if(unit.homePlanet.name == "waterPlanet"){
+		midPt2.subVectors(clickIntersection.point, objects.sandPlanet.position);
+	}
+	else{
+		midPt2.subVectors(clickIntersection.point, objects.waterPlanet.position);
+	}
+	*/
+
+	//Create missile route
+	var Route = new THREE.SplineCurve3([
+		startPt,
+		midPt,
+		//midPt2,
+		endPt
+		]);
+
+	//Init the missile itself (container with object, time, route)
+	var missile = {};
+	missile.object = missileTemplate.clone();
+	missile.object.position = startPt.clone();
+	missile.route = Route;
+	missile.splineTime = 0;
+
+	//Add to scene
+	scene.add(missile.object);
+	objects.projectiles.push(missile);
+
+
+	//Unselect unit
+	selectedUnit.material.color = selectedUnit.tempColor;
+	selectedUnit.material.needsUpdate = true;
+	selectedUnit = undefined;
+
 }
 
 //Places the object that was selected in unit selection to arg position
@@ -198,21 +306,3 @@ function PlaceselectionScreenSelectedUnit(intersectPt, clickedObject){
 	
 }
 
-//Sets the target position for a given unit to arg position
-function MoveUnit(unit, position, clickedObject){
-	//minor fix: collision boxes between units (just simple distance calc over objects.units...) (prevent moving inside other unit)
-
-	var pos = new THREE.Vector3();
-	if(ownPlanet == 1 && clickedObject == "planet1"){
-		pos.subVectors(position, objects.waterPlanet.position).multiplyScalar(0.1);
-		pos.addVectors(pos, position);
-		unit.targetPosition = pos;
-		unit.lookAt(pos);
-	}
-	else if(ownPlanet == 2 && clickedObject == "planet2"){
-		pos.subVectors(position, objects.sandPlanet.position).multiplyScalar(0.1);
-		pos.addVectors(pos, position);
-		unit.targetPosition = pos;
-		unit.lookAt(pos);
-	}
-}
