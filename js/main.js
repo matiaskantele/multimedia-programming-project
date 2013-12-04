@@ -111,8 +111,30 @@ function ReceiveData(data){
 			// Some game stuff
 			break;
 
+		case "You Win":
+			alert("WIN YAY");
+			break;
+
 		case "Move":
 			// And so on
+			break;
+		case "TurnFinished":
+			console.log("Opponent finished turn!");
+
+			opponentReady = true;
+
+			$.each(data[1], function(idx, obj){
+				RegisterEnemyMissile(
+					ListVec3(obj[0]),
+					ListVec3(obj[1]),
+					ListVec3(obj[2])
+					);
+			});
+
+			if(selfReady && opponentReady){
+				console.log("Both finished, ending turn!");
+				finishTurn();
+			}
 			break;
 
 		case "OpponentName":
@@ -120,7 +142,14 @@ function ReceiveData(data){
 			break;
 
 		case "UnitPlacementFinished":
-			console.log(data);
+			console.log("Got unit placement finished message: " + data);
+			opponentReady = true;
+
+			if(opponentReady && selfReady){
+				//Begin turn...
+				beginTurn();
+			}
+
 			break;
 
 		//Define the planet you are assigned
@@ -193,14 +222,15 @@ function ShowUnitSelection(){
 	$finishbtn = $("<div id='finishselection' />", cssfile).html('Finish unit selection').on('click', function(){
 		$("#selectscreen").hide();
 
-		//.. Send other player message about finishing unit placement etc...
-		/*
-		var unit_positions = [];
-		$.each(objects.units, function(idx, obj){
-			unit_positions.push(Vec3List(obj.position));
-		});
-		SendData(connection, ["UnitPlacementFinished", unit_positions]);
-		*/
+		selfReady = true;
+		SendData(connection, ["UnitPlacementFinished"]);
+
+		disableControls = true;
+
+		if(selfReady && opponentReady){
+			//Begin turn
+			beginTurn();
+		}
 	});
 
 	$selectscreen.append($finishbtn);
@@ -211,8 +241,8 @@ function ShowUnitSelection(){
 $(document).ready(function() {
 
 	//Uncomment these to debug unit selection/placement
-	ShowUnitSelection();
-	$('#welcomeScreen').hide();
+	//ShowUnitSelection();
+	//$('#welcomeScreen').hide();
 
 	// Bind functions to html elements
 	RegisterToServer();
@@ -225,9 +255,59 @@ $(document).ready(function() {
 		if(e.keyCode == 13) ConnectToOpponent();
 	});
 
+	//Add turn finish button
+	addTurnFinishButton();
+
 	startGame();
 });
 
+//Begin a turn, timer down, show finish turn button
+function beginTurn(){
+	disableControls = false; //Enable controls
+	selfReady = false;
+	opponentReady = false;
+	$("#finishturn").show();
+
+	//Set turns back to usable
+	$.each(objects.units, function(idx, obj){
+		obj.turnUsed = false;
+	});
+
+	console.log("Begin turn");
+}
+
+function finishTurn(){
+	//Begin animating (eval phase)
+	console.log("Finish turn called")
+
+	//If no rockets to animate we start new turn immediately
+	if(rocketsToAnimate.length == 0){
+		beginTurn();
+		return;
+	}
+
+	$.each(rocketsToAnimate, function(idx, obj){
+		scene.add(obj.object);
+		objects.projectiles.push(obj);
+	});
+
+	ownMoves = [];
+	rocketsToAnimate = [];
+}
+
+function newTurn(){
+	console.log("New turn called")
+
+	//If all own units got destroyed last turn we lost
+	//Draw conclusion not done and untested
+	if(objects.units.length == 0){
+		SendData(connection, ["You Win"]);
+		alert("YOU LOSE")
+		//Graceful disconnect/restart etc required
+	}
+
+	beginTurn();
+}
 
 function Vec3List(vec){
 	return [vec.x, vec.y, vec.z];
@@ -237,3 +317,28 @@ function ListVec3(li){
 	var to_return = new THREE.Vector3(li[0], li[1], li[2]);
 	return to_return;
 }
+
+function addTurnFinishButton(){
+	var cssfile = {rel:'stylesheet',type:'text/css',href:'css/main.css'};
+	$finishbtn = $("<div id='finishturn' />", cssfile).html('Finish turn').on('click', function(){
+
+		if(selectedUnit !== undefined){
+			selectedUnit.material.color = selectedUnit.tempColor;
+			selectedUnit.material.needsUpdate = true;
+			selectedUnit = undefined;
+		}
+
+		selfReady = true;
+		SendData(connection, ["TurnFinished", ownMoves]);
+
+		if(selfReady && opponentReady){
+			//Begin turn
+			console.log("Finishing turn");
+			finishTurn();
+		}
+	});
+
+	$("body").append($finishbtn);
+	$finishbtn.hide();
+}
+

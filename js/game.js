@@ -3,7 +3,19 @@ var ownPlanetIndex = Math.random(); //If this is higher than opponent index, the
 var ownPlanet = 1; //1 = water, 2 = sand
 var particleRED; //Red particle loaded here for preloading purposes
 
-var enemyUnitPositions = [];
+//Ready states for opponent and self
+var opponentReady = false;
+var selfReady = false;
+
+//Disable controls for example in eval and wait phases
+var disableControls = false;
+
+//Own moves to be transferred to opponent
+//Contains only firing moves as they are the only thing that needs to be transferred to opponent
+var ownMoves = [];
+
+//Rockets to be animated at the end of the turn
+var rocketsToAnimate = [];
 
 // Initial function to start the game
 function startGame() {
@@ -34,9 +46,6 @@ function init() {
 	addPlanets();
 	addStarfield();
 	loadMissile();
-
-	//Preload particle texture
-	particleRED = THREE.ImageUtils.loadTexture( 'img/smokeparticleRED.png');
 }
 
 // Game main loop

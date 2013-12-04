@@ -33,6 +33,8 @@ function update(){
 //Tracks the points and intersects under mouse every frame
 function TrackPointUnderMouse(){
 
+	if(disableControls) return;
+
 	// Raycast from camera to under mouse
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1 );
 	projector.unprojectVector(vector, camera);
@@ -75,26 +77,34 @@ function onMouseDown(e){
 
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
-			
-			if(selectedUnit.homePlanet !== intersects[0].object &&
-				((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet))
-				){
 
-				ShootMissile(selectedUnit, intersects[0]);
+			if(selectedUnit.homePlanet !== intersects[0].object &&
+				((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet))){
+
+				selectedUnit.turnUsed = true; //Use a turn
+				RegisterOwnMissile(selectedUnit, intersects[0]);
 				return;
 			}
 
-			//Set color back to original
-			selectedUnit.material.color = selectedUnit.tempColor;
-			selectedUnit.material.needsUpdate = true;
-			
-			//Move
-			MoveUnit(selectedUnit, intersects[0].point, intersects[0].object.name);
-			selectedUnit = undefined;
+			if((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet)){
+				//Set color back to original
+				selectedUnit.material.color = selectedUnit.tempColor;
+				selectedUnit.material.needsUpdate = true;
+				
+				//Move
+				//selectedUnit.turnUsed = true; //Use a turn
+				MoveUnit(selectedUnit, intersects[0].point, intersects[0].object.name);
+				selectedUnit = undefined;
+			}
+
 		}
 
 		//Selecting an unit
 		else if(intersects[0].object.name == "unit"){
+
+			if(disableControls) return;
+			if(intersects[0].object.turnUsed) return;
+
 			selectedUnit = intersects[0].object;
 
 			//Set color
@@ -159,14 +169,36 @@ function InterpolateUnitPositions(){
 function InterpolateMissiles(){
 
 	$.each(objects.projectiles, function(idx, obj){
+		
+		if(obj == undefined) return true;
 
 		obj.splineTime += 0.01;
 
 		//Check if missile reached target
 		if(obj.splineTime >= 1){
 			//Explosion+effect evaluation here...
+			//All missiles simply destroy all units they hit (enemy+own, own never hit anything)
+
+			var explosionPos = obj.route.getPointAt(1);
+			var temp = new THREE.Vector3();
+
+			$.each(objects.units, function(unitIdx, unit){
+
+				temp.subVectors(unit.position, explosionPos);
+				
+				if(temp.length() < 100){ //EXPLOSION SIZE HARDCODED SHITTY_PROGRAMMING.JPG
+					scene.remove(unit);
+					objects.units.splice(unitIdx, 1);
+				}
+			});
+
 			scene.remove(obj.object);
 			objects.projectiles.splice(idx, 1);
+
+			//If all animated things are gone we can start new turn
+			if(objects.projectiles.length == 0){
+				newTurn();
+			}
 			return true;
 		}
 
@@ -204,8 +236,8 @@ function MoveUnit(unit, position, clickedObject){
 	}
 }
 
-//Shoots a new missile
-function ShootMissile(unit, clickIntersection){
+//Shoots a new missile (register own missile)
+function RegisterOwnMissile(unit, clickIntersection){
 	//@TODO: Figure out how to prevent rockets from clipping by setting better spline points
 
 	//Calc start, 2 mid points and endpoint
@@ -247,16 +279,42 @@ function ShootMissile(unit, clickIntersection){
 	missile.route = Route;
 	missile.splineTime = 0;
 
+	/* ADD IN ANIMATE
 	//Add to scene
 	scene.add(missile.object);
 	objects.projectiles.push(missile);
-
+	*/
+	rocketsToAnimate.push(missile); //For animation at the end of the turn
+	ownMoves.push([
+		Vec3List(startPt),
+		Vec3List(midPt),
+		Vec3List(endPt)
+		]); //For sending to opponent
 
 	//Unselect unit
 	selectedUnit.material.color = selectedUnit.tempColor;
 	selectedUnit.material.needsUpdate = true;
 	selectedUnit = undefined;
 
+}
+
+//Creates a missile using only 3 spline points (register opponent missile)
+function RegisterEnemyMissile(startPt, midPt, endPt){
+	var Route = new THREE.SplineCurve3([
+		startPt,
+		midPt,
+		endPt
+		]);
+
+	var missile = {};
+	missile.object = missileTemplate.clone();
+	missile.object.position = startPt.clone();
+	missile.route = Route;
+	missile.splineTime = 0;
+
+	rocketsToAnimate.push(missile);
+	//scene.add(missile.object);
+	//objects.projectiles.push(missile);
 }
 
 //Places the object that was selected in unit selection to arg position
@@ -289,6 +347,7 @@ function PlaceselectionScreenSelectedUnit(intersectPt, clickedObject){
 	}
 
 	selectionScreenSelectedUnit.name = "unit";
+	selectionScreenSelectedUnit.turnUsed = false;
 
 	objects.units.push(selectionScreenSelectedUnit);
 	scene.add(selectionScreenSelectedUnit);
