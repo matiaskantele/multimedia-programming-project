@@ -3,11 +3,19 @@ var planetToFollowPos = new THREE.Vector3(0,0,0);
 var mouse = new THREE.Vector2();
 var deltaTime;
 
+var turnTime = 10; //Allowed time for each turn
+var turnTimer = 0; //Ongoing turn timer
+var turnTimeShown = -1; //Value shown in span, -1 when no turn in progression
+var turnInProgress = false;
+
 // Update is called once per frame
 function update(){
 
 	//Update shader variables
 	UpdateShaders();
+
+	//Update timer for turn progression
+	UpdateTurnTimer();
 
 	// Trackball controls
 	controls.update();
@@ -28,6 +36,45 @@ function update(){
 
 	// Prevent camera moving relative to skybox
 	objects.skyBox.position.copy( camera.position );
+}
+
+function UpdateTurnTimer(){
+
+	if(gameOver) return;
+
+	if(!turnInProgress) return;
+
+	turnTimer += deltaTime;
+
+	if(turnTime - Math.floor(turnTimer) != turnTimeShown && turnTimeShown >= 0){
+
+		turnTimeShown = turnTime - Math.floor(turnTimer);
+		$("#statustext").html("Turn " + turnCounter + ". Time left: " + turnTimeShown);
+
+		//#HACK# Retarded webkit browsers update innerhtml only once (why???)
+		//Changing the css makes it update... yeah....
+		$("#statustext").css("z-index", parseInt($("#statustext").css("z-index")) + 1);
+
+		if(turnTimeShown < 0){
+
+			if(selfReady) return;
+
+			disableControls = true;
+
+			if(selectedUnit !== undefined){
+				selectedUnit.material.color = selectedUnit.tempColor;
+				selectedUnit.material.needsUpdate = true;
+				selectedUnit = undefined;
+			}
+
+			selfReady = true;
+			SendData(connection, ["TurnFinished", ownMoves]);
+
+			if(selfReady && opponentReady){
+				finishTurn();
+			}
+		}
+	}	
 }
 
 //Tracks the points and intersects under mouse every frame
@@ -78,6 +125,8 @@ function onMouseDown(e){
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
 
+			if(selfReady) return;
+
 			//If clicked enemy planet
 			if(selectedUnit.homePlanet !== intersects[0].object &&
 				((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet))){
@@ -115,6 +164,7 @@ function onMouseDown(e){
 
 			if(disableControls) return;
 			if(intersects[0].object.turnUsed) return;
+			if(selfReady) return;
 
 			if(ownPlanet == 1)
 				planetToFollowPos = objects.sandPlanet.position;

@@ -3,6 +3,10 @@ var connection = undefined; //Connection to opponent
 var serverInfo = {hostname: '127.0.0.1', port: 7500};//{hostname: 'lair.dy.fi', port: 7500};
 var playerName = "";
 
+var turnCounter = 1;
+var gameOver = false;
+var selfLost = false; var opponentLost = false;
+
 function RegisterToServer() {
 
 	// Register to server using info above. Timeouts/errors if server is not running.
@@ -112,7 +116,15 @@ function ReceiveData(data){
 			break;
 
 		case "You Win":
-			alert("WIN YAY");
+			console.log("Got winning message");
+			turnInProgress = false;
+			selfReady = true; opponentReady = false;
+			gameOver = true;
+			opponentLost = true;
+			$("#statustext").html("Game over.\nYou won!");
+
+			//Check if game is a draw
+			checkDraw();
 			break;
 
 		case "Move":
@@ -146,6 +158,7 @@ function ReceiveData(data){
 			opponentReady = true;
 
 			if(opponentReady && selfReady){
+
 				//Begin turn...
 				beginTurn();
 			}
@@ -154,6 +167,8 @@ function ReceiveData(data){
 
 		//Define the planet you are assigned
 		case "PlanetIndex":
+
+			console.log("Assigning planets, own idx: " + ownPlanetIndex + " Opponent idx: " + data[1]);
 			ownPlanet = 1; //1 = water, 2 = sand
 			if(ownPlanetIndex > data[1]){
 				ownPlanet = 2;
@@ -176,6 +191,8 @@ function ReceiveData(data){
 
 //Show the screen for unit selection
 function ShowUnitSelection(){
+
+	$("#statustext").html("Place your units");
 
 	var cssfile = {rel:'stylesheet',type:'text/css',href:'css/main.css'};
 
@@ -224,10 +241,12 @@ function ShowUnitSelection(){
 
 		selfReady = true;
 		SendData(connection, ["UnitPlacementFinished"]);
-
 		disableControls = true;
 
+		$("#statustext").html("Waiting for opponent to finish");
+
 		if(selfReady && opponentReady){
+
 			//Begin turn
 			beginTurn();
 		}
@@ -258,11 +277,17 @@ $(document).ready(function() {
 	//Add turn finish button
 	addTurnFinishButton();
 
+	//Add status text
+	addStatusText();
+
 	startGame();
 });
 
 //Begin a turn, timer down, show finish turn button
 function beginTurn(){
+	//$("#statustext").html("Turn " + turnCounter + ". Time left: " + turnTimeleft);
+	turnTimer = 0; turnTimeShown = 0;
+	turnInProgress = true;
 	disableControls = false; //Enable controls
 	selfReady = false;
 	opponentReady = false;
@@ -284,7 +309,12 @@ function beginTurn(){
 
 function finishTurn(){
 	//Begin animating (eval phase)
-	console.log("Finish turn called")
+	console.log("Finish turn called");
+	//turnTimeShown = -1;
+	turnInProgress = false;
+	disableControls = true;
+	turnCounter += 1;
+	$("#statustext").html("Evaluating turn.");
 
 	//If no rockets to animate we start new turn immediately
 	if(rocketsToAnimate.length == 0){
@@ -297,7 +327,7 @@ function finishTurn(){
 		scene.add(obj.object);
 		objects.projectiles.push(obj);
 	});
-
+	
 	ownMoves = [];
 	rocketsToAnimate = [];
 }
@@ -309,25 +339,41 @@ function newTurn(){
 	//Draw conclusion not done and untested
 	if(objects.units.length == 0){
 		SendData(connection, ["You Win"]);
-		alert("YOU LOSE")
+		//alert("YOU LOSE");
+
+		console.log("Sending lose message.")
+		selfReady = true; opponentReady = false;
+		turnInProgress = false;
+		gameOver = true;
+		selfLost = true;
+		$("#statustext").css('color', 'red');
+		$("#statustext").html("Game over.\nYou lost.");
+
+		checkDraw();
+		return;
 		//Graceful disconnect/restart etc required
 	}
 
 	beginTurn();
 }
 
+//Turns threejs vec3 to a standard list
 function Vec3List(vec){
 	return [vec.x, vec.y, vec.z];
 }
 
+//Turns a list [x,y,z] to a threejs vec3
 function ListVec3(li){
 	var to_return = new THREE.Vector3(li[0], li[1], li[2]);
 	return to_return;
 }
 
+//Adds turn finished button and binds functionality to it
 function addTurnFinishButton(){
 	var cssfile = {rel:'stylesheet',type:'text/css',href:'css/main.css'};
-	$finishbtn = $("<div id='finishturn' />", cssfile).html('Finish turn').on('click', function(){
+	$finishbtn = $("<div id='finishturn' />", cssfile)/*.html('Finish turn')*/.on('click', function(){
+
+		if(gameOver) return;
 
 		if(selectedUnit !== undefined){
 			selectedUnit.material.color = selectedUnit.tempColor;
@@ -345,7 +391,34 @@ function addTurnFinishButton(){
 		}
 	});
 
+	$finishbtn.append(
+		$("<span id='finishturntxt' />").html('Finish turn').css({
+			'position':'relative',
+			'font-size':'120%',
+			'top':'20px',
+			'color':'#C7F464'
+		}));
+
 	$("body").append($finishbtn);
 	$finishbtn.hide();
 }
 
+//Adds the status text
+function addStatusText(){
+	var cssfile = {rel:'stylesheet',type:'text/css',href:'css/main.css'};
+
+	var $dummyDiv = $("<div id='statusDummy' />").css({'text-align':'center', 'z-index':'9'});
+	var $statusText = $("<span id='statustext' />", cssfile).html('Connect to your opponent');
+	$("body").append($dummyDiv);
+	$dummyDiv.append($statusText);
+}
+
+function checkDraw(){
+
+	setTimeout(function(){
+		if(selfLost && opponentLost){
+			$("#statustext").html("Game over.\nDraw.");
+			$("#statustext").css('color', 'yellow');
+		}
+	}, 400);
+}
