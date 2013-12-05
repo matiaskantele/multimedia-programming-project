@@ -273,6 +273,12 @@ function beginTurn(){
 		obj.turnUsed = false;
 	});
 
+	//Remove drawn lines
+	$.each(missileLines, function(idx, obj){
+		scene.remove(obj);
+	});
+	missileLines = [];
+
 	console.log("Begin turn");
 }
 
@@ -286,6 +292,7 @@ function finishTurn(){
 		return;
 	}
 
+	//Add all rockets to scene for animation+evaluation
 	$.each(rocketsToAnimate, function(idx, obj){
 		scene.add(obj.object);
 		objects.projectiles.push(obj);

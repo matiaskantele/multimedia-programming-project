@@ -21,7 +21,7 @@ function update(){
 	//Interpolate missile movement and animate
 	InterpolateMissiles();
 
-	//Camera pivot point follows planetToFollowPos
+	//Camera pivot point smoothly follows planetToFollowPos
 	cameraMovementVector.subVectors(planetToFollowPos , controls.target).multiplyScalar(0.1);
 	controls.object.position.add(cameraMovementVector);
 	controls.target.add(cameraMovementVector);
@@ -55,7 +55,7 @@ function TrackPointUnderMouse(){
 
 var selectedUnit = undefined; //Unit that has been selected in game situation
 
-// This current implementation triggers even when dragging so it's not viable!
+// Evaluate functionality when mouse/touch pressed down (note: also triggers on dragging)
 function onMouseDown(e){
 
 	// Raycast from camera to under mouse
@@ -78,15 +78,26 @@ function onMouseDown(e){
 		//If an unit has been selected in game situation
 		else if(selectedUnit !== undefined){
 
+			//If clicked enemy planet
 			if(selectedUnit.homePlanet !== intersects[0].object &&
 				((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet))){
+
+				planetToFollowPos = selectedUnit.homePlanet.position;
 
 				selectedUnit.turnUsed = true; //Use a turn
 				RegisterOwnMissile(selectedUnit, intersects[0]);
 				return;
 			}
 
+			//If clicked own planet
 			if((intersects[0].object == objects.waterPlanet) || (intersects[0].object == objects.sandPlanet)){
+
+				//If we're focused to enemy planet, 1st click to own planet moves camera back to own planet instead of moving
+				if(planetToFollowPos !== selectedUnit.homePlanet.position){
+					planetToFollowPos = selectedUnit.homePlanet.position;
+					return;
+				}
+
 				//Set color back to original
 				selectedUnit.material.color = selectedUnit.tempColor;
 				selectedUnit.material.needsUpdate = true;
@@ -104,6 +115,11 @@ function onMouseDown(e){
 
 			if(disableControls) return;
 			if(intersects[0].object.turnUsed) return;
+
+			if(ownPlanet == 1)
+				planetToFollowPos = objects.sandPlanet.position;
+			else
+				planetToFollowPos = objects.waterPlanet.position;
 
 			selectedUnit = intersects[0].object;
 
@@ -268,7 +284,7 @@ function RegisterOwnMissile(unit, clickIntersection){
 	var Route = new THREE.SplineCurve3([
 		startPt,
 		midPt,
-		//midPt2,
+		//midPt2, //notice points can be added easily like this
 		endPt
 		]);
 
@@ -279,17 +295,29 @@ function RegisterOwnMissile(unit, clickIntersection){
 	missile.route = Route;
 	missile.splineTime = 0;
 
-	/* ADD IN ANIMATE
-	//Add to scene
-	scene.add(missile.object);
-	objects.projectiles.push(missile);
-	*/
 	rocketsToAnimate.push(missile); //For animation at the end of the turn
 	ownMoves.push([
 		Vec3List(startPt),
 		Vec3List(midPt),
 		Vec3List(endPt)
 		]); //For sending to opponent
+
+
+	//DRAW CURVE
+	var lineMaterial = new THREE.LineBasicMaterial({
+    	color: 0xff00f0,
+	});
+	
+	var lineGeometry = new THREE.Geometry();
+	var splinePoints = Route.getPoints(20);
+	
+	for(var i = 0; i < splinePoints.length; i++){
+	    lineGeometry.vertices.push(splinePoints[i]);  
+	}
+	
+	var line = new THREE.Line(lineGeometry, lineMaterial);
+	scene.add(line);
+	missileLines.push(line);
 
 	//Unselect unit
 	selectedUnit.material.color = selectedUnit.tempColor;

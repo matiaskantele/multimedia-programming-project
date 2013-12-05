@@ -9,6 +9,7 @@ var raycaster = new THREE.Raycaster();
 var projector = new THREE.Projector();
 var selectionScreenSelectedUnit = undefined; //Object to place when selected in unit selection screen
 var missileTemplate; //Template for missile to clone from
+var missileLines = [];
 
 function addCamera() {
 	// Camera

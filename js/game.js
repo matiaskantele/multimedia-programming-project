@@ -1,7 +1,6 @@
 var money = 1000;
 var ownPlanetIndex = Math.random(); //If this is higher than opponent index, then you get planet 2
 var ownPlanet = 1; //1 = water, 2 = sand
-var particleRED; //Red particle loaded here for preloading purposes
 
 //Ready states for opponent and self
 var opponentReady = false;
