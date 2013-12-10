@@ -1,6 +1,6 @@
 var connectionBroker = undefined;
 var connection = undefined; //Connection to opponent
-var serverInfo = {hostname: '127.0.0.1', port: 7500};//{hostname: 'lair.dy.fi', port: 7500};
+var serverInfo = {hostname: 'lair.dy.fi', port: 7500};//{hostname: 'lair.dy.fi', port: 7500};
 var playerName = "";
 
 var turnCounter = 1;
