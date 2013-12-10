@@ -26,6 +26,7 @@ function setupRenderer() {
 	renderer.setClearColor(0xffffff, 1);
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.sortObjects = false;
+	renderer.shadowMapEnabled = true;
 	container.appendChild(renderer.domElement);
 }
 
@@ -134,12 +135,14 @@ function addPlanets() {
 	waterPlanet = new THREE.Mesh(waterGeometry, waterMaterial);
 	waterPlanet.position.set(0, 65, 160);
 	waterPlanet.name = "planet1";
+	waterPlanet.receiveShadow = true;
+	waterPlanet.castShadow = true;
 	objects.waterPlanet = waterPlanet;
 	scene.add( waterPlanet );
 
 	// Sandplanet
 	// base image texture for mesh
-	var sandTexture = new THREE.ImageUtils.loadTexture('img/wat.jpg');
+	var sandTexture = new THREE.ImageUtils.loadTexture('img/cloud.png');
 	sandTexture.wrapS = sandTexture.wrapT = THREE.RepeatWrapping;
 	// multiplier for distortion speed
 	var sBaseSpeed = 0.0001;
@@ -147,13 +150,13 @@ function addPlanets() {
 	var sRepeatS = sRepeatT = 4.0;
 
 	// texture used to generate "randomness", distort all other textures
-	var sNoiseTexture = new THREE.ImageUtils.loadTexture('img/cloud.png');
+	var sNoiseTexture = new THREE.ImageUtils.loadTexture('img/sand.jpg');
 	sNoiseTexture.wrapS = sNoiseTexture.wrapT = THREE.RepeatWrapping;
 	// magnitude of noise effect
 	var sNoiseScale = 0.5;
 
 	// texture to additively blend with base image texture
-	var sBlendTexture = new THREE.ImageUtils.loadTexture('img/wat.jpg');
+	var sBlendTexture = new THREE.ImageUtils.loadTexture('img/cloud.png');
 	sBlendTexture.wrapS = sBlendTexture.wrapT = THREE.RepeatWrapping;
 	// multiplier for distortion speed
 	var sBlendSpeed = 0.003;
@@ -238,6 +241,8 @@ function addPlanets() {
 
 	var sandGeometry = new THREE.SphereGeometry(200, 64, 64);
 	sandPlanet = new THREE.Mesh(sandGeometry, sandMaterial);
+	sandPlanet.receiveShadow = true;
+	sandPlanet.castShadow = true;
 	sandPlanet.position.set(0, 65, 160);
 	sandPlanet.position.x -= 1000;
 	sandPlanet.position.z -= 1000;
@@ -272,6 +277,9 @@ function addLights() {
 	scene.add(new THREE.AmbientLight(0x555555));
 	var light = new THREE.SpotLight(0xffffff, 1.5);
 	light.position.set(0, 500, 2000);
+	light.castShadow = true;
+	light.shadowDarkness = 0.5;
+	//light.shadowCameraVisible = true;
 	scene.add(light);
 }
 
