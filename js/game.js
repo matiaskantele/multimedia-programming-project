@@ -20,15 +20,15 @@ var rocketsToAnimate = [];
 function startGame() {
 
 	//Load shaders
-	$("#waterVertex").load("shader/waterVertex.glsl", function(){
-	$("#waterFragment").load("shader/waterFragment.glsl", function(){
-	$("#sandVertex").load("shader/sandVertex.glsl", function(){
-	$("#sandFragment").load("shader/sandFragment.glsl", function(){
-		init();
-		run();
-	});
-	});
-	});
+	$("#waterVertex").load("shader/waterVertex.glsl", function() {
+		$("#waterFragment").load("shader/waterFragment.glsl", function() {
+			$("#sandVertex").load("shader/sandVertex.glsl", function() {
+				$("#sandFragment").load("shader/sandFragment.glsl", function() {
+					init();
+					run();
+				});
+			});
+		});
 	});
 }
 

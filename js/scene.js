@@ -1,4 +1,4 @@
-//Dirty global variables
+//Global variables
 var container; //DOM container for the game
 var camera, controls, scene, renderer;
 var objects = {}; //Objects in the scene
@@ -127,7 +127,7 @@ function addPlanets() {
 	};
 
 	// create custom material from the shader code above
-	//   that is within specially labeled script tags
+	// that is within specially labeled script tags
 	var waterMaterial = new THREE.ShaderMaterial({
 		uniforms: waterUniforms,
 		vertexShader: document.getElementById("waterVertex").textContent,
@@ -141,7 +141,7 @@ function addPlanets() {
 	waterPlanet.receiveShadow = true;
 	waterPlanet.castShadow = true;
 	objects.waterPlanet = waterPlanet;
-	scene.add( waterPlanet );
+	scene.add(waterPlanet);
 
 	// Sandplanet
 	// base image texture for mesh
@@ -251,7 +251,7 @@ function addPlanets() {
 	sandPlanet.position.z -= 1000;
 	sandPlanet.name = "planet2";
 	objects.sandPlanet = sandPlanet;
-	scene.add( sandPlanet );
+	scene.add(sandPlanet);
 
 }
 
@@ -268,10 +268,10 @@ function addSkybox() {
 			map: THREE.ImageUtils.loadTexture(imagePrefix + directions[i] + imageSuffix),
 			side: THREE.BackSide
 		}));
-	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-	skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+	var skyMaterial = new THREE.MeshFaceMaterial(materialArray);
+	skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
 	objects.skyBox = skyBox;
-	scene.add( skyBox );
+	scene.add(skyBox);
 }
 
 function addLights() {
@@ -288,7 +288,7 @@ function addLights() {
 
 function setupControls() {
 
-	// Trackball controls
+	// controls
 	renderer.domElement.addEventListener('mousemove', onMouseMove);
 	renderer.domElement.addEventListener('mousedown', onMouseDown, false);
 
@@ -307,9 +307,8 @@ function setupControls() {
 function addCursorObject() {
 
 	// Particle under cursor
-	var spriteMaterial = new THREE.SpriteMaterial( 
-	{ 
-		map: new THREE.ImageUtils.loadTexture( 'img/glow.png' ), 
+	var spriteMaterial = new THREE.SpriteMaterial({
+		map: new THREE.ImageUtils.loadTexture('img/glow.png'),
 		useScreenCoordinates: false,
 		color: 0xff0000,
 		transparent: false,
@@ -356,11 +355,11 @@ function addStarfield() {
 }
 
 //Loads dummyunit.obj and sets is as the object to place (should be made general to any object)
-function addDummyUnit(){
+function addDummyUnit() {
 
 	var loader = new THREE.OBJMTLLoader();
-	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object){
-		
+	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object) {
+
 		//Loader makes the obj file content the CHILDREN of the returned object for god knows what reason
 		//This .children[2] is a very dirty hack for this loader nonsense that took way too long to find
 		//Most likely breaks for all other .obj files
@@ -371,10 +370,10 @@ function addDummyUnit(){
 	});
 }
 
-function loadMissile(){
+function loadMissile() {
 
 	var loader = new THREE.OBJMTLLoader();
-	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object){
+	loader.load('assets/dummybox.obj', 'assets/dummybox.mtl', function(object) {
 		//Again the [2] hack...
 		missileTemplate = object.children[2];
 	});
