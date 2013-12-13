@@ -155,6 +155,7 @@ input:focus {
 }
 
 #playerName {
+    display:none;
     border-radius: 6px;
     height: 30px;
     margin-top: 6px;
@@ -167,6 +168,7 @@ input:focus {
     margin: 0 auto;
     width: 130px;
     padding-left: 6px;
+    margin-top: 6px;
 }
 
 #connect {

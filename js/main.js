@@ -215,7 +215,7 @@ function ShowUnitSelection(){
 
 	//Button for an unit
 	var $unit1btn = $("<div class='unitbtn' />",cssfile).css({
-		'background' : 'url(img/dummybox.png)',
+		'background' : 'url(img/dummybox.PNG)',
 		'background-size' : 'contain'
 	}).on('click', function(){
 		if(money - parseInt($unit1cost.html()) < 0) return; //Should show error "not enough money blabla"
